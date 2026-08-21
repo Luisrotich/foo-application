@@ -1,0 +1,62 @@
+[
+  {
+    "id": 1,
+    "name": "Organic Apple",
+    "category": "Fruits",
+    "price": 2.99,
+    "stock": 50,
+    "rating": 4.8,
+    "description": "Fresh organic apples from the farm.",
+    "image": ""
+  },
+  {
+    "id": 2,
+    "name": "Sourdough Bread",
+    "category": "Breads",
+    "price": 4.5,
+    "stock": 20,
+    "rating": 4.5,
+    "description": "Artisan sourdough baked daily.",
+    "image": ""
+  },
+  {
+    "id": 3,
+    "name": "Carrot Bundle",
+    "category": "Veggies",
+    "price": 1.99,
+    "stock": 35,
+    "rating": 4.2,
+    "description": "Fresh organic carrots.",
+    "image": ""
+  },
+  {
+    "id": 4,
+    "name": "Cheddar Cheese",
+    "category": "Dairy",
+    "price": 5.99,
+    "stock": 15,
+    "rating": 4.7,
+    "description": "Aged cheddar cheese block.",
+    "image": ""
+  },
+  {
+    "id": 5,
+    "name": "Garden Salad",
+    "category": "Salad",
+    "price": 6.49,
+    "stock": 10,
+    "rating": 4.3,
+    "description": "Mixed greens with cherry tomatoes.",
+    "image": ""
+  },
+  {
+    "id": 6,
+    "name": "Orange Juice",
+    "category": "Drinks",
+    "price": 3.49,
+    "stock": 25,
+    "rating": 4.0,
+    "description": "Freshly squeezed orange juice.",
+    "image": ""
+  }
+]

@@ -1,0 +1,23 @@
+{
+  "name": "Fresh Ready Foods",
+  "short_name": "Fresh Foods",
+  "description": "Order fresh groceries and meals",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F97316",
+  "theme_color": "#F97316",
+  "icons": [
+    {
+      "src": "/static/favicon.jpeg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/static/favicon.jpeg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}
