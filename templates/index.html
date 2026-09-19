@@ -2293,7 +2293,12 @@
             let currentUser = null;
             let userFavorites = [];
             let userAddresses = [];
+            // ...existing code...
             let userOrders = [];
+            let orderStatusTimer = null;
+            let previousOrderStatuses = new Map();
+            let orderStatusesInitialized = false;
+            // ...existing code...
 
             const TAX_RATE = 0.10;
             const STORAGE_KEY = 'fresh_cart';
@@ -2345,8 +2350,12 @@
                                 app.classList.remove('hidden');
                                 loadCart();
                                 fetchProducts();
+                                // ...existing code...
                                 fetchUserData();
+                                startOrderStatusPolling();
                                 updateUIForUser();
+                                // ...existing code...
+                              
                                 return true;
                             });
                         }
@@ -2383,46 +2392,57 @@
                 contentArea.scrollTop = 0;
             }
 
-            function doLogin(email, name) {
-                return fetch('/api/user/status', { credentials: 'include' })
-                    .then(res => {
-                        if (res.ok) {
-                            return res.json().then(data => {
-                                isLoggedIn = true;
-                                currentUser = data;
-                                authScreen.classList.add('hidden');
-                                app.classList.remove('hidden');
-                                loadCart();
-                                fetchProducts();
-                                fetchUserData();
-                                updateUIForUser();
-                                showToast(`Welcome, ${currentUser.name || email}!`, 2000);
-                            });
-                        } else {
-                            // fallback
-                            isLoggedIn = true;
-                            currentUser = { email, name: name || email.split('@')[0] };
-                            authScreen.classList.add('hidden');
-                            app.classList.remove('hidden');
-                            loadCart();
-                            fetchProducts();
-                            updateUIForUser();
-                            showToast(`Welcome, ${currentUser.name}!`, 2000);
-                        }
-                    })
-                    .catch(() => {
-                        isLoggedIn = true;
-                        currentUser = { email, name: name || email.split('@')[0] };
-                        authScreen.classList.add('hidden');
-                        app.classList.remove('hidden');
-                        loadCart();
-                        fetchProducts();
-                        updateUIForUser();
-                        showToast(`Welcome, ${currentUser.name}!`, 2000);
-                    });
+ function doLogin(email, name) {
+    return fetch('/api/user/status', { credentials: 'include' })
+        .then(res => {
+            if (res.ok) {
+                return res.json().then(data => {
+                    isLoggedIn = true;
+                    currentUser = data;
+                    authScreen.classList.add('hidden');
+                    app.classList.remove('hidden');
+
+                    loadCart();
+                    fetchProducts();
+                    fetchUserData();
+                    startOrderStatusPolling();
+                    updateUIForUser();
+
+                    showToast(`Welcome, ${currentUser.name || email}!`, 2000);
+                });
             }
 
+            isLoggedIn = true;
+            currentUser = { email, name: name || email.split('@')[0] };
+            authScreen.classList.add('hidden');
+            app.classList.remove('hidden');
+
+            loadCart();
+            fetchProducts();
+            fetchUserData();
+            startOrderStatusPolling();
+            updateUIForUser();
+
+            showToast(`Welcome, ${currentUser.name}!`, 2000);
+        })
+        .catch(() => {
+            isLoggedIn = true;
+            currentUser = { email, name: name || email.split('@')[0] };
+            authScreen.classList.add('hidden');
+            app.classList.remove('hidden');
+
+            loadCart();
+            fetchProducts();
+            fetchUserData();
+            startOrderStatusPolling();
+            updateUIForUser();
+
+            showToast(`Welcome, ${currentUser.name}!`, 2000);
+        });
+}
+
             function doLogout() {
+                stopOrderStatusPolling();
                 fetch('/api/user/logout', { method: 'POST', credentials: 'include' }).catch(() => {});
                 isLoggedIn = false;
                 currentUser = null;
@@ -2497,8 +2517,8 @@
                         body: JSON.stringify({ email }),
                         credentials: 'include'
                     })
-                    .then(res => res.json())
-                    .then(data => {
+                    .then(res => res.json().then(data => ({ res, data })))
+                    .then(({ res, data }) => {
                         if (res.ok) {
                             forgotSuccess.textContent = '✅ Reset link sent to your email.';
                             forgotError.textContent = '';
@@ -2657,26 +2677,80 @@
             // ==========================================================
             // FETCH USER DATA
             // ==========================================================
-            function fetchUserData() {
-                fetch('/api/user/profile', { credentials: 'include' })
-                    .then(res => {
-                        if (res.ok) {
-                            return res.json().then(data => {
-                                // The legacy API returns { user, favorites, ...}; the
-                                // production API returns the user directly.
-                                currentUser = data.user || data;
-                                userFavorites = data.favorites || [];
-                                userAddresses = data.addresses || [];
-                                userOrders = data.orders || [];
-                                updateUIForUser();
-                                renderOrders();
-                                renderFavorites();
-                                renderAddresses();
-                            });
-                        }
-                    })
-                    .catch(() => {});
-            }
+           // ...existing code...
+function fetchUserData() {
+    fetch('/api/user/profile', { credentials: 'include' })
+        .then(res => {
+            if (!res.ok) throw new Error('Profile request failed');
+            return res.json();
+        })
+        .then(data => {
+            currentUser = data.user || data;
+            userFavorites = data.favorites || data.user?.favorites || [];
+            userAddresses = data.addresses || data.user?.addresses || [];
+            userOrders = data.orders || data.user?.orders || [];
+
+            checkForOrderStatusChanges(userOrders);
+
+            updateUIForUser();
+            renderOrders();
+            renderFavorites();
+            renderAddresses();
+        })
+        .catch(error => console.error('User data error:', error));
+}
+
+function checkForOrderStatusChanges(orders) {
+    const currentStatuses = new Map();
+
+    if (!Array.isArray(orders)) return;
+
+    orders.forEach(order => {
+        const orderId = String(
+            order.orderId || order.order_id || order.id || order._id || ''
+        );
+
+        if (!orderId) return;
+
+        const status = String(
+            order.status ||
+            order.order_status ||
+            order.orderStatus ||
+            order.payment_status ||
+            'pending'
+        ).toLowerCase().trim();
+
+        currentStatuses.set(orderId, status);
+
+        if (
+            orderStatusesInitialized &&
+            previousOrderStatuses.has(orderId) &&
+            previousOrderStatuses.get(orderId) !== status
+        ) {
+            showToast(`Order #${orderId} is now ${status.toUpperCase()}`, 5000);
+        }
+    });
+
+    previousOrderStatuses = currentStatuses;
+    orderStatusesInitialized = true;
+}
+function startOrderStatusPolling() {
+    clearInterval(orderStatusTimer);
+
+    orderStatusTimer = setInterval(() => {
+        if (isLoggedIn) {
+            fetchUserData();
+        }
+    }, 10000); // Check every 10 seconds
+}
+
+function stopOrderStatusPolling() {
+    clearInterval(orderStatusTimer);
+    orderStatusTimer = null;
+    previousOrderStatuses.clear();
+    orderStatusesInitialized = false;
+}
+// ...existing code...
 
             function renderOrders() {
                 if (!userOrders.length) {
@@ -2690,7 +2764,7 @@
                     const orderJson = JSON.stringify(o).replaceAll("'", "&#39;");
                     html += `<div class="order-item">
                         <div class="order-header">
-                            <span>#${o.orderId || o.id}</span>
+                            <span>#${o.orderId || o.order_id || o.id}</span>
                             <span class="order-status ${statusClass}">${statusClass.toUpperCase()}</span>
                         </div>
                         <div class="order-details">
