@@ -1,11 +1,13 @@
 # app.py - Full Flask backend for Fresh Ready Foods
 # Serves customer app at / and admin panel at /admin
-from dotenv import load_dotenv
 import os
-
-load_dotenv()
 import base64
 import requests
+from dotenv import load_dotenv
+
+
+load_dotenv()
+
 import os
 import json
 import uuid
