@@ -4,6 +4,8 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv()
+import base64
+import requests
 import os
 import json
 import uuid
@@ -81,7 +83,54 @@ def parse_json_items(items_str):
         return json.loads(items_str)
     except:
         return []
+def get_mpesa_access_token():
+    response = requests.get(
+        f"{os.getenv('MPESA_BASE_URL')}/oauth/v1/generate"
+        "?grant_type=client_credentials",
+        auth=(
+            os.getenv('MPESA_CONSUMER_KEY'),
+            os.getenv('MPESA_CONSUMER_SECRET')
+        ),
+        timeout=30
+    )
+    response.raise_for_status()
+    return response.json()['access_token']
 
+
+def send_stk_push(phone, amount, account_reference):
+    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+    shortcode = os.getenv('MPESA_SHORTCODE')
+    passkey = os.getenv('MPESA_PASSKEY')
+
+    password = base64.b64encode(
+        f'{shortcode}{passkey}{timestamp}'.encode()
+    ).decode()
+
+    payload = {
+        'BusinessShortCode': shortcode,
+        'Password': password,
+        'Timestamp': timestamp,
+        'TransactionType': 'CustomerPayBillOnline',
+        'Amount': max(1, int(round(float(amount)))),
+        'PartyA': phone,
+        'PartyB': shortcode,
+        'PhoneNumber': phone,
+        'CallBackURL': os.getenv('MPESA_CALLBACK_URL'),
+        'AccountReference': account_reference,
+        'TransactionDesc': 'Food order payment'
+    }
+
+    response = requests.post(
+        f"{os.getenv('MPESA_BASE_URL')}/mpesa/stkpush/v1/processrequest",
+        headers={
+            'Authorization': f"Bearer {get_mpesa_access_token()}",
+            'Content-Type': 'application/json'
+        },
+        json=payload,
+        timeout=30
+    )
+    response.raise_for_status()
+    return response.json()
 # ============================
 # CUSTOMER AUTH ROUTES
 # ============================
@@ -338,23 +387,32 @@ def upload_image():
 # ============================
 # CHECKOUT / ORDER
 # ============================
-
 @app.route('/api/checkout', methods=['POST'])
 def checkout():
     user = get_current_user()
+
     if not user:
         return jsonify({'error': 'Please log in to checkout'}), 401
-    data = request.get_json()
+
+    data = request.get_json() or {}
     items = data.get('items')
     total = data.get('total')
     phone = data.get('phone')
-    delivery = data.get('delivery')
-    if not items or not total or not phone:
+    delivery = data.get('delivery') or data.get('address')
+
+    if not items or total is None or not phone or not delivery:
         return jsonify({'error': 'Missing required fields'}), 400
 
+    if not str(phone).startswith('254') or len(str(phone)) != 12:
+        return jsonify({'error': 'Phone must use format 2547XXXXXXXX'}), 400
+
     global order_id_counter, payment_id_counter
+
     order_id = order_id_counter
     order_id_counter += 1
+
+    payment_id = payment_id_counter
+    payment_id_counter += 1
 
     order = {
         'id': order_id,
@@ -362,32 +420,55 @@ def checkout():
         'customer': user['name'],
         'phone': phone,
         'items': json.dumps(items),
-        'total': total,
+        'total': float(total),
         'status': 'pending',
         'created_at': datetime.now().isoformat(),
         'note': data.get('note', ''),
         'delivery_address': delivery,
-        'payment_id': None
+        'payment_id': payment_id
     }
 
-    checkout_id = 'CHK' + str(uuid.uuid4().hex[:8]).upper()
-    payment_id = payment_id_counter
-    payment_id_counter += 1
-    payment = {
+    orders[order_id] = order
+
+    try:
+        mpesa_response = send_stk_push(
+            phone,
+            total,
+            f'ORDER-{order_id}'
+        )
+    except requests.RequestException as error:
+        orders.pop(order_id, None)
+        return jsonify({
+            'error': f'M-Pesa request failed: {error}'
+        }), 502
+
+    if mpesa_response.get('ResponseCode') != '0':
+        orders.pop(order_id, None)
+        return jsonify({
+            'error': mpesa_response.get(
+                'ResponseDescription',
+                'STK push was rejected'
+            )
+        }), 400
+
+    checkout_id = mpesa_response.get('CheckoutRequestID')
+
+    payments[payment_id] = {
         'id': payment_id,
         'order_id': order_id,
         'phone': phone,
-        'amount': total,
+        'amount': float(total),
         'status': 'pending',
         'transaction_id': '',
         'checkout_request_id': checkout_id,
         'created_at': datetime.now().isoformat()
     }
-    payments[payment_id] = payment
-    order['payment_id'] = payment_id
-    orders[order_id] = order
 
-    save_notification(f"New order #{order_id} placed by {user['name']}", 'order')
+    save_notification(
+        f"New order #{order_id} placed by {user['name']}",
+        'order'
+    )
+
     return jsonify({
         'success': True,
         'order_id': order_id,
@@ -398,30 +479,75 @@ def checkout():
 @app.route('/api/checkout/status', methods=['GET'])
 def checkout_status():
     checkout_id = request.args.get('checkoutId')
+
     if not checkout_id:
         return jsonify({'error': 'Missing checkoutId'}), 400
-    for pid, p in payments.items():
-        if p.get('checkout_request_id') == checkout_id:
-            created = datetime.fromisoformat(p['created_at'])
-            if p['status'] == 'pending' and (datetime.now() - created).total_seconds() > 5:
-                p['status'] = 'completed'
-                p['transaction_id'] = 'RKT' + uuid.uuid4().hex[:8].upper()
-                order = orders.get(p['order_id'])
-                if order:
-                    order['status'] = 'paid'
-                    items = parse_json_items(order['items'])
-                    for item in items:
-                        prod = products.get(item['id'])
-                        if prod:
-                            prod['stock'] = max(0, prod['stock'] - item['qty'])
-                save_notification(f"Payment #{p['id']} completed for order #{p['order_id']}", 'payment')
-            return jsonify({
-                'status': p['status'],
-                'transactionId': p.get('transaction_id', ''),
-                'paymentId': p['id']
-            }), 200
-    return jsonify({'error': 'Checkout ID not found'}), 404
 
+    for payment in payments.values():
+        if payment.get('checkout_request_id') == checkout_id:
+            return jsonify({
+                'status': payment['status'],
+                'transactionId': payment.get('transaction_id', ''),
+                'paymentId': payment['id']
+            }), 200
+
+    return jsonify({'error': 'Checkout ID not found'}), 404
+@app.route('/api/mpesa/callback', methods=['POST'])
+def mpesa_callback():
+    callback = request.get_json(silent=True) or {}
+    stk_callback = callback.get('Body', {}).get('stkCallback', {})
+
+    checkout_id = stk_callback.get('CheckoutRequestID')
+    result_code = stk_callback.get('ResultCode')
+
+    if not checkout_id:
+        return jsonify({'ResultCode': 0, 'ResultDesc': 'Accepted'}), 200
+
+    payment = next(
+        (
+            item for item in payments.values()
+            if item.get('checkout_request_id') == checkout_id
+        ),
+        None
+    )
+
+    if not payment:
+        return jsonify({'ResultCode': 0, 'ResultDesc': 'Accepted'}), 200
+
+    order = orders.get(payment['order_id'])
+
+    if result_code == 0:
+        metadata = stk_callback.get('CallbackMetadata', {}).get('Item', [])
+
+        receipt = next(
+            (
+                item.get('Value')
+                for item in metadata
+                if item.get('Name') == 'MpesaReceiptNumber'
+            ),
+            ''
+        )
+
+        payment['status'] = 'completed'
+        payment['transaction_id'] = receipt
+
+        if order:
+            order['status'] = 'paid'
+
+        save_notification(
+            f"Payment completed for order #{payment['order_id']}",
+            'payment'
+        )
+    else:
+        payment['status'] = 'failed'
+
+        if order:
+            order['status'] = 'cancelled'
+
+    return jsonify({
+        'ResultCode': 0,
+        'ResultDesc': 'Accepted'
+    }), 200
 # ============================
 # ADMIN ROUTES
 # ============================
