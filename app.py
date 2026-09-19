@@ -1,6 +1,9 @@
 # app.py - Full Flask backend for Fresh Ready Foods
 # Serves customer app at / and admin panel at /admin
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
 import os
 import json
 import uuid
@@ -657,6 +660,30 @@ def get_notifications():
     if not admin:
         return jsonify({'error': 'Admin required'}), 403
     return jsonify(notifications), 200
+
+
+# ...existing code...
+
+@app.route('/api/user/notifications', methods=['GET'])
+def user_notifications():
+    user = get_current_user()
+    if not user:
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    user_orders = [
+        {
+            'id': order['id'],
+            'status': order.get('status', 'pending'),
+            'created_at': order.get('created_at'),
+            'total': order.get('total', 0)
+        }
+        for order in orders.values()
+        if order.get('user_id') == user['id']
+    ]
+
+    return jsonify({'orders': user_orders}), 200
+
+# ...existing code...
 
 # ============================
 # SERVE HTML PAGES

@@ -1459,9 +1459,7 @@
             .floating-cart {
                 display: flex !important;
             }
-            .bottom-nav {
-                display: none !important;
-            }
+           
             .cart-panel.desktop {
                 display: flex !important;
             }
@@ -1696,6 +1694,49 @@
         .edit-profile-form .save-btn:hover {
             background: #ea580c;
         }
+
+.notification-popup {
+    position: fixed;
+    right: 1rem;
+    bottom: 5.5rem;
+    width: 320px;
+    max-width: calc(100% - 2rem);
+    z-index: 10000;
+    background: #fff;
+    border-radius: 16px;
+    padding: 1rem;
+    box-shadow: 0 8px 30px #0004;
+}
+
+.notification-popup.hidden {
+    display: none;
+}
+
+@media (max-width: 899px) {
+    .notification-popup {
+        right: 0.75rem;
+        bottom: 4.8rem;
+        width: calc(100% - 1.5rem);
+    }
+}
+
+.notification-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.notification-header button {
+    border: 0;
+    background: transparent;
+    font-size: 22px;
+    cursor: pointer;
+}
+
+.notification-item {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
     </style>
 </head>
 <body>
@@ -1986,6 +2027,15 @@
             <nav class="bottom-nav" id="bottomNav">
                 <button class="nav-item active" data-view="home"><i class="fas fa-home"></i> Home</button>
                 <button class="nav-item" data-view="cart" id="bottomCartBtn"><i class="fas fa-shopping-cart"></i> Cart <span class="nav-badge empty" id="bottomNavBadge">0</span></button>
+                <!-- ...existing code...-->
+
+<button class="nav-item" data-view="notifications" id="notificationButton">
+    <i class="fas fa-bell"></i>
+    <span>Notifications</span>
+    <span class="nav-badge empty" id="notificationBadge">0</span>
+</button>
+
+<!-- ...existing code...-->
                 <button class="nav-item" data-view="profile"><i class="fas fa-user"></i> Profile</button>
             </nav>
         </div>
@@ -2115,7 +2165,19 @@
             </div>
         </div>
     </div>
+<!-- ...existing code...-->
 
+
+
+<div id="notificationPopup" class="notification-popup hidden">
+    <div class="notification-header">
+        <strong>Delivery Notifications</strong>
+        <button id="closeNotifications">×</button>
+    </div>
+    <div id="notificationList">No notifications yet.</div>
+</div>
+
+<!-- ...existing code...-->
     <!-- ============================================================
     JAVASCRIPT — Full client application
     ============================================================ -->
@@ -2302,6 +2364,8 @@
 
             const TAX_RATE = 0.10;
             const STORAGE_KEY = 'fresh_cart';
+
+
 
             // ---- utils ----
             function showToast(msg, duration = 2500) {
@@ -2690,12 +2754,14 @@ function fetchUserData() {
             userAddresses = data.addresses || data.user?.addresses || [];
             userOrders = data.orders || data.user?.orders || [];
 
-            checkForOrderStatusChanges(userOrders);
+            // checkForOrderStatusChanges(userOrders);
 
             updateUIForUser();
             renderOrders();
             renderFavorites();
             renderAddresses();
+            loadCustomerNotifications();
+            
         })
         .catch(error => console.error('User data error:', error));
 }
@@ -3468,127 +3534,163 @@ function stopOrderStatusPolling() {
                 if (e.target === mpesaModal) mpesaModal.classList.remove('show');
             });
 
-            // Extract polling logic to reduce nesting
-            function pollPaymentStatus(checkoutId, onComplete, onError) {
-                let attempts = 0;
-                let pollInterval = setInterval(() => {
-                    attempts++;
-                    fetch(`/api/checkout/status?checkoutId=${checkoutId}`, { credentials: 'include' })
-                        .then(res => res.json())
-                        .then(statusData => {
-                            if (statusData.status === 'completed' || statusData.status === 'paid') {
-                                clearInterval(pollInterval);
-                                onComplete();
-                            } else if (statusData.status === 'failed' || attempts > 20) {
-                                clearInterval(pollInterval);
-                                onError('Payment pending or failed. Check your phone.');
-                            }
-                        })
-                        .catch(() => {});
-                }, 3000);
+           
+function pollPaymentStatus(checkoutId, onComplete, onError) {
+    let attempts = 0;
+    let finished = false;
 
-                // Fallback after 30s
-                setTimeout(() => {
-                    if (pollInterval) {
-                        clearInterval(pollInterval);
-                        onError('Payment still processing. Check your M-PESA.');
-                    }
-                }, 30000);
+    const pollInterval = setInterval(() => {
+        attempts++;
+
+        fetch(`/api/checkout/status?checkoutId=${encodeURIComponent(checkoutId)}`, {
+            credentials: 'include'
+        })
+            .then(response => response.json())
+            .then(statusData => {
+                const status = String(statusData.status || '').toLowerCase();
+
+                if (status === 'completed' || status === 'paid') {
+                    finished = true;
+                    clearInterval(pollInterval);
+                    onComplete();
+                } else if (status === 'failed' || attempts >= 20) {
+                    finished = true;
+                    clearInterval(pollInterval);
+                    onError('Payment pending or failed. Check your phone.');
+                }
+            })
+            .catch(() => {});
+    }, 3000);
+
+    setTimeout(() => {
+        if (!finished) {
+            finished = true;
+            clearInterval(pollInterval);
+            onError('Payment still processing. Check your M-PESA.');
+        }
+    }, 30000);
+}
+
+function showPaymentSuccess() {
+    mpesaStatus.textContent = '✅ Payment confirmed! Order placed. 🎉';
+    mpesaStatus.style.color = '#166534';
+
+    showToast(
+        'Payment confirmed! Keep an eye on the Notifications button.',
+        7000
+    );
+
+    notificationButton.animate(
+        [
+            { transform: 'scale(1)' },
+            { transform: 'scale(1.15)' },
+            { transform: 'scale(1)' }
+        ],
+        { duration: 700, iterations: 3 }
+    );
+
+    cart = [];
+    saveCart();
+    updateAllUI();
+    closeAllPanels();
+    fetchUserData();
+    loadCustomerNotifications();
+
+    setTimeout(() => {
+        mpesaModal.classList.remove('show');
+    }, 1500);
+
+    mpesaPayBtn.disabled = false;
+    mpesaPayBtn.textContent = 'Pay Now';
+}
+
+mpesaPayBtn.addEventListener('click', () => {
+    const phone = mpesaPhone.value.trim();
+    const delivery = mpesaDelivery.value.trim();
+
+    if (!phone) {
+        mpesaStatus.textContent = 'Please enter a phone number.';
+        mpesaStatus.style.color = '#ef4444';
+        return;
+    }
+
+    if (!/^254\d{9}$/.test(phone)) {
+        mpesaStatus.textContent = 'Format: 2547XXXXXXXX';
+        mpesaStatus.style.color = '#ef4444';
+        return;
+    }
+
+    if (!delivery) {
+        mpesaStatus.textContent = 'Please enter a delivery address.';
+        mpesaStatus.style.color = '#ef4444';
+        return;
+    }
+
+   const items = cart.map(item => ({
+    id: item.id,
+    name: item.name,
+    qty: item.qty,
+    price: item.price
+}));
+
+const total = items.reduce(
+    (sum, item) => sum + Number(item.price) * Number(item.qty),
+    0
+);
+
+
+    mpesaPayBtn.disabled = true;
+    mpesaPayBtn.textContent = 'Processing...';
+    mpesaStatus.textContent = '📱 Sending STK push...';
+    mpesaStatus.style.color = '#f97316';
+
+    fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+            items,
+            total,
+            phone,
+            address: delivery,
+            delivery
+        })
+    })
+        .then(response => {
+            if (!response.ok) throw new Error('Checkout failed');
+            return response.json();
+        })
+        .then(data => {
+            mpesaStatus.textContent = '✅ Payment initiated! Check your phone.';
+            mpesaStatus.style.color = '#166534';
+
+            const checkoutId = data.checkoutRequestId || data.checkoutId;
+
+            if (!checkoutId) {
+                throw new Error('Missing payment reference');
             }
 
-            mpesaPayBtn.addEventListener('click', () => {
-                const phone = mpesaPhone.value.trim();
-                const delivery = mpesaDelivery.value.trim();
-                if (!phone) {
-                    mpesaStatus.textContent = 'Please enter a phone number.';
+            pollPaymentStatus(
+                checkoutId,
+                showPaymentSuccess,
+                errorMessage => {
+                    mpesaStatus.textContent = `⚠️ ${errorMessage}`;
                     mpesaStatus.style.color = '#ef4444';
-                    return;
+                    mpesaPayBtn.disabled = false;
+                    mpesaPayBtn.textContent = 'Pay Now';
                 }
-                if (!/^254\d{9}$/.test(phone)) {
-                    mpesaStatus.textContent = 'Format: 2547XXXXXXXX (10 digits)';
-                    mpesaStatus.style.color = '#ef4444';
-                    return;
-                }
-                if (!delivery) {
-                    mpesaStatus.textContent = 'Please enter a delivery address.';
-                    mpesaStatus.style.color = '#ef4444';
-                    return;
-                }
-                const total = Number.parseFloat(mpesaTotal.textContent);
-                const items = cart.map(item => ({ id: item.id, name: item.name, qty: item.qty, price: item.price }));
+            );
+        })
+        .catch(error => {
+            mpesaStatus.textContent = `❌ Error: ${error.message}`;
+            mpesaStatus.style.color = '#ef4444';
+            mpesaPayBtn.disabled = false;
+            mpesaPayBtn.textContent = 'Pay Now';
+        });
+});
+            
 
-                mpesaPayBtn.disabled = true;
-                mpesaPayBtn.textContent = 'Processing...';
-                mpesaStatus.textContent = '📱 Sending STK push...';
-                mpesaStatus.style.color = '#f97316';
-
-                fetch('/api/checkout', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ items, phone, address: delivery, delivery }),
-                        credentials: 'include'
-                    })
-                    .then(res => {
-                        if (!res.ok) throw new Error('Checkout failed');
-                        return res.json();
-                    })
-                    .then(data => {
-                        mpesaStatus.textContent = '✅ Payment initiated! Check your phone.';
-                        mpesaStatus.style.color = '#166534';
-                        const checkoutId = data.checkoutRequestId || data.checkoutId;
-                        if (checkoutId) {
-                            pollPaymentStatus(
-                                checkoutId,
-                                () => {
-                                    mpesaStatus.textContent = '✅ Payment confirmed! Order placed. 🎉';
-                                    mpesaStatus.style.color = '#166534';
-                                    cart = [];
-                                    saveCart();
-                                    updateAllUI();
-                                    closeAllPanels();
-                                    fetchUserData();
-                                    setTimeout(() => mpesaModal.classList.remove('show'), 1500);
-                                    mpesaPayBtn.disabled = false;
-                                    mpesaPayBtn.textContent = 'Pay Now';
-                                },
-                                (errorMsg) => {
-                                    mpesaStatus.textContent = `⚠️ ${errorMsg}`;
-                                    mpesaStatus.style.color = '#ef4444';
-                                    mpesaPayBtn.disabled = false;
-                                    mpesaPayBtn.textContent = 'Pay Now';
-                                }
-                            );
-                        }
-                    })
-                    .catch(err => {
-                        mpesaStatus.textContent = `❌ Error: ${err.message}`;
-                        mpesaStatus.style.color = '#ef4444';
-                        mpesaPayBtn.disabled = false;
-                        mpesaPayBtn.textContent = 'Pay Now';
-                    });
-            });
-
-            // ==========================================================
-            // BOTTOM NAV
-            // ==========================================================
-            navItems.forEach(item => {
-                item.addEventListener('click', function(e) {
-                    const view = this.dataset.view;
-                    e.preventDefault();
-                    setActiveNav(view);
-                    if (view === 'home') {
-                        closeAllPanels();
-                        showView('home');
-                        contentArea.scrollTop = 0;
-                    } else if (view === 'cart') {
-                        openCartHandler();
-                    } else if (view === 'profile') {
-                        closeAllPanels();
-                        showView('profile');
-                    }
-                });
-            });
-
+      
             // ==========================================================
             // PWA INSTALL
             // ==========================================================
@@ -3613,8 +3715,96 @@ function stopOrderStatusPolling() {
             installLater.addEventListener('click', () => {
                 installPopup.classList.add('hidden');
             });
+    
 
             // ==========================================================
+// BOTTOM NAVIGATION AND NOTIFICATIONS
+// ==========================================================
+const notificationButton = $('#notificationButton');
+const notificationPopup = $('#notificationPopup');
+const closeNotifications = $('#closeNotifications');
+const notificationList = $('#notificationList');
+const notificationBadge = $('#notificationBadge');
+
+let lastNotificationStatuses = new Map();
+
+navItems.forEach(item => {
+    item.addEventListener('click', event => {
+        event.preventDefault();
+
+        const view = item.dataset.view;
+        setActiveNav(view);
+
+        if (view === 'home') {
+            notificationPopup.classList.add('hidden');
+            closeAllPanels();
+            showView('home');
+        } else if (view === 'cart') {
+            notificationPopup.classList.add('hidden');
+            openCartHandler();
+        } else if (view === 'profile') {
+            notificationPopup.classList.add('hidden');
+            closeAllPanels();
+            showView('profile');
+        } else if (view === 'notifications') {
+            closeAllPanels();
+            notificationPopup.classList.remove('hidden');
+            loadCustomerNotifications();
+        }
+    });
+});
+
+closeNotifications.addEventListener('click', () => {
+    notificationPopup.classList.add('hidden');
+});
+
+function loadCustomerNotifications() {
+    fetch('/api/user/notifications', { credentials: 'include' })
+        .then(response => {
+            if (!response.ok) throw new Error('Failed to load notifications');
+            return response.json();
+        })
+        .then(data => {
+            const orders = Array.isArray(data.orders) ? data.orders : [];
+
+            notificationBadge.textContent = orders.length;
+            notificationBadge.classList.toggle('empty', orders.length === 0);
+
+            notificationList.innerHTML = orders.length
+                ? orders.map(order => `
+                    <div class="notification-item">
+                        <strong>Order #${order.id}</strong><br>
+                        Delivery status:
+                        <b>${String(order.status || 'pending').toUpperCase()}</b>
+                    </div>
+                `).join('')
+                : 'No delivery notifications yet.';
+
+            checkImmediateStatusChanges(orders);
+        })
+        .catch(() => {
+            notificationList.textContent = 'Unable to load notifications.';
+        });
+}
+
+function checkImmediateStatusChanges(orders) {
+    orders.forEach(order => {
+        const id = String(order.id || '');
+        const status = String(order.status || 'pending').toLowerCase();
+
+        if (
+            lastNotificationStatuses.has(id) &&
+            lastNotificationStatuses.get(id) !== status
+        ) {
+            showToast(`Order #${id} is now ${status.toUpperCase()}`, 6000);
+            notificationPopup.classList.remove('hidden');
+        }
+
+        lastNotificationStatuses.set(id, status);
+    });
+}
+
+       // ==========================================================
             // SERVICE WORKER
             // ==========================================================
             if ('serviceWorker' in navigator) {
