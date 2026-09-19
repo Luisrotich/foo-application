@@ -328,14 +328,14 @@
         }
         .header-cart-btn {
             position: relative;
-            font-size: 1.4rem;
-            color: #1e293b;
+            font-size: 0.8rem;
+            color: #fdfdfd;
             padding: 0.3rem;
             border-radius: 50%;
             transition: 0.15s;
-            background: #f8fafc;
-            width: 42px;
-            height: 42px;
+            background: #f0611f;
+            width: 36px;
+            height: 36px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -347,7 +347,7 @@
             position: absolute;
             top: -4px;
             right: -4px;
-            background: #f97316;
+            background: #020108;
             color: #fff;
             font-size: 0.6rem;
             font-weight: 700;
@@ -1779,10 +1779,12 @@
                 <div class="auth-success" id="signupSuccess"></div>
                 <button type="submit" class="auth-btn"><i class="fas fa-user-plus"></i> Create Account</button>
                 <div class="auth-divider">or continue with</div>
+                <!--
                 <div class="auth-social" style="display:flex;gap:0.6rem;justify-content:center;">
                     <button type="button" id="googleSignupBtn" style="background:#f1f5f9;padding:0.5rem 1.2rem;border-radius:30px;font-weight:600;font-size:0.85rem;display:flex;align-items:center;gap:0.4rem;"><i class="fab fa-google"></i> Google</button>
                     <button type="button" style="background:#f1f5f9;padding:0.5rem 1.2rem;border-radius:30px;font-weight:600;font-size:0.85rem;display:flex;align-items:center;gap:0.4rem;"><i class="fab fa-facebook"></i> Facebook</button>
                 </div>
+                -->
             </form>
             <!-- Forgot Password (inline) -->
             <div class="auth-form" id="forgotPwdForm">
@@ -1819,13 +1821,15 @@
         <header class="app-header">
             <div class="header-left">
                 <span class="logo-icon"><i class="fas fa-apple-alt"></i></span>
-                <span class="logo-text">Fresh<span>Ready</span></span>
+                <span class="logo-text">Foody<span></span></span>
             </div>
             <div class="header-right">
+              
                 <button class="header-cart-btn" id="headerCartBtn" aria-label="Open cart">
                     <i class="fas fa-shopping-cart"></i>
                     <span class="badge empty" id="headerCartBadge">0</span>
                 </button>
+               
                 <button class="header-avatar" id="avatarBtn" title="Profile / Logout">U</button>
             </div>
         </header>
@@ -1837,16 +1841,7 @@
             <button class="search-clear" id="searchClear"><i class="fas fa-times-circle"></i></button>
         </div>
 
-        <!-- PROMO -->
-        <section class="promo-banner">
-            <div class="promo-content">
-                <span class="promo-tag">🔥 ENJOY THE SPECIALS</span>
-                <h2>Extra 20% OFF</h2>
-                <p>Superb spreads &amp; fresh picks</p>
-                <button class="promo-btn-sm">Shop Now <i class="fas fa-arrow-right"></i></button>
-            </div>
-            <div class="promo-emoji"><i class="fas fa-leaf"></i></div>
-        </section>
+       
 
         <!-- MAIN LAYOUT -->
         <div class="main-layout">
@@ -1891,15 +1886,18 @@
                             <div class="profile-card" id="profileCard">
                                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
                                     <h3 style="font-size:1rem;">My Profile</h3>
-                                     <button class="profile-edit-btn" id="editProfileBtn"><i class="fas fa-edit"></i> Edit</button>
+                                    
+                                     <button class="profile-edit-btn" id="editProfileBtn"><i class="fas fa-edit"></i> Edit Profile</button>
                                  </div>
-                                <button class="profile-edit-btn" id="profileLogoutBtn" style="background:#ef4444;margin-top:1rem;"><i class="fas fa-sign-out-alt"></i> Log out</button>
                                 <div id="profileDisplay">
                                     <div class="profile-row"><span class="label">Name</span><span class="value" id="pName">—</span></div>
                                     <div class="profile-row"><span class="label">Email</span><span class="value" id="pEmail">—</span></div>
+                                    <!---->
                                     <div class="profile-row"><span class="label">Phone</span><span class="value" id="pPhone">—</span></div>
                                     <div class="profile-row"><span class="label">Delivery Address</span><span class="value" id="pAddress">—</span></div>
                                     <div class="profile-row"><span class="label">Member since</span><span class="value" id="pSince">—</span></div>
+                                    <button class="profile-edit-btn" id="profileLogoutBtn" style="background:#ef4444;margin-top:1rem;"><i class="fas fa-sign-out-alt"></i> Log out</button>
+
                                 </div>
                                 <div id="profileEditForm" class="hidden edit-profile-form">
                                     <div class="form-group">
@@ -1908,11 +1906,11 @@
                                     </div>
                                     <div class="form-group">
                                         <label for="editPhone">Phone</label>
-                                        <input type="tel" id="editPhone" placeholder="2547XXXXXXXX" />
+                                        <input type="tel" id="editPhone" placeholder="2547......" />
                                     </div>
                                     <div class="form-group">
                                         <label for="editAddress">Delivery Address (Estate/Street, House/Landmark)</label>
-                                        <textarea id="editAddress" placeholder="Nyeri Town, Kimathi Street, Opposite QuickMart"></textarea>
+                                        <textarea id="editAddress" placeholder=""></textarea>
                                     </div>
                                     <div class="form-group" style="display:flex;gap:0.6rem;flex-wrap:wrap;">
                                         <button class="save-btn" id="saveProfileBtn"><i class="fas fa-save"></i> Save</button>
@@ -1964,17 +1962,19 @@
                                 </div>
                                 <div class="form-group">
                                     <label for="addrEstate">Estate / Street</label>
-                                    <input type="text" id="addrEstate" placeholder="Kimathi Street" />
+                                    <input type="text" id="addrEstate" placeholder="" />
                                 </div>
                                 <div class="form-group">
                                     <label for="addrHouse">House / Landmark</label>
-                                    <input type="text" id="addrHouse" placeholder="Opposite QuickMart" />
+                                    <input type="text" id="addrHouse" placeholder="" />
                                 </div>
                                 <div class="form-group">
                                     <label for="addrNotes">Notes for Rider</label>
                                     <textarea id="addrNotes" placeholder="Gate code, etc."></textarea>
                                 </div>
                                 <button class="save-btn" id="saveAddressBtn">Save Address</button>
+                                <button class="profile-edit-btn" id="profileLogoutBtn" style="background:#ef4444;margin-top:1rem;"><i class="fas fa-sign-out-alt"></i> Log out</button>
+
                             </div>
                         </div>
                     </div>
@@ -2037,9 +2037,9 @@
             <p class="modal-price" id="modalPrice">$0.00</p>
             <p class="modal-desc" id="modalDesc">Description...</p>
             <div style="display:flex;gap:0.8rem;flex-wrap:wrap;font-size:0.75rem;color:#64748b;margin-bottom:0.5rem;">
-                <span id="modalPrepTime">⏱ Prep: —</span>
-                <span id="modalIngredients">🥗 Ingredients: —</span>
-                <span id="modalNutrition">🍎 Nutrition: —</span>
+                <span id="modalPrepTime"> </span>
+                <span id="modalIngredients"> </span>
+                <span id="modalNutrition"> </span>
             </div>
             <div class="modal-stock" id="modalStock">In stock: 0</div>
             <div class="modal-qty">
@@ -2082,9 +2082,10 @@
                 <p><strong>Total:</strong> <span id="mpesaTotal">$0.00</span></p>
                 <p><strong>Items:</strong> <span id="mpesaItemCount">0</span></p>
             </div>
+            <!---->
             <div class="mpesa-input">
-                <label for="mpesaPhone">Phone Number (e.g., 2547XXXXXXXX)</label>
-                <input type="tel" id="mpesaPhone" placeholder="2547XXXXXXXX" />
+                <label for="mpesaPhone">Phone Number . </label>
+                <input type="tel" id="mpesaPhone" placeholder="254......." />
             </div>
             <div class="mpesa-input">
                 <label for="mpesaDelivery">Delivery Address</label>
@@ -3218,7 +3219,6 @@
                         <div class="card-img">${imgHtml}</div>
                         <div class="card-name">${escHtml(p.name)}</div>
                         <div class="card-price">${formatPrice(p.price)}</div>
-                        ${rating ? `<div class="card-rating">${rating}</div>` : ''}
                         <div class="card-stock">${inStock ? p.stock + ' in stock' : 'Out of stock'}</div>
                     </div>`;
                 }
@@ -3291,9 +3291,7 @@
                 modalName.textContent = product.name;
                 modalPrice.textContent = formatPrice(product.price);
                 modalDesc.textContent = product.description || 'No description';
-                modalPrepTime.textContent = `⏱ Prep: ${product.prepTime || '—'}`;
-                modalIngredients.textContent = `🥗 Ingredients: ${product.ingredients || '—'}`;
-                modalNutrition.textContent = `🍎 Nutrition: ${product.nutrition || '—'}`;
+              
                 modalStock.textContent = `In stock: ${product.stock !== undefined ? product.stock : 0}`;
                 relatedProducts.innerHTML = '';
                 const related = products.filter(p => p.category === product.category && p.id !== product.id).slice(0, 4);

@@ -88,7 +88,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="weight">${p.stock > 0 ? 'In stock' : 'Out of stock'}</div>
                     <div class="price-rating">
                         <span class="price">$${p.price.toFixed(2)}</span>
-                        <span class="rating"><i class="fas fa-star"></i> ${p.rating || 4.0}</span>
                     </div>
                     <div class="delivery">${p.delivery || 'Delivered'}</div>
                 </div>
