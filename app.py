@@ -1,433 +1,787 @@
+# app.py - Full Flask backend for Fresh Ready Foods
+# Serves customer app at / and admin panel at /admin
+
 import os
 import json
-import sqlite3
 import uuid
-import threading
-import time
-from flask import Flask, request, jsonify, render_template, send_from_directory, session
+from datetime import datetime, timedelta
+from flask import Flask, session, request, jsonify, render_template, send_from_directory
+from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
-from flask_bcrypt import Bcrypt
 
-app = Flask(__name__, static_folder='static', template_folder='templates')
-app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
-bcrypt = Bcrypt(app)
+app = Flask(__name__)
+app.secret_key = 'supersecretkey-freshready-2026'
+app.config['UPLOAD_FOLDER'] = 'static/uploads'
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB
 
-UPLOAD_FOLDER = 'static/uploads'
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-MAX_CONTENT_LENGTH = 16 * 1024 * 1024
+# Ensure folders exist
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+os.makedirs('templates', exist_ok=True)
+os.makedirs('static', exist_ok=True)
 
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+# ============================
+# DATA STORES (in‑memory)
+# ============================
 
-def get_db():
-    conn = sqlite3.connect('database.db')
-    conn.row_factory = sqlite3.Row
-    return conn
+users = {}          # id -> {id, name, email, password_hash, phone, address, created_at, favorites, addresses}
+products = {}       # id -> {id, name, category, price, stock, discount, prep_time, rating, featured, description, image, image_icon, available, sort_order}
+orders = {}         # id -> {id, user_id, customer, phone, items, total, status, created_at, note, delivery_address, payment_id}
+payments = {}       # id -> {id, order_id, phone, amount, status, transaction_id, checkout_request_id, created_at}
+deliveries = {}     # id -> {id, name, phone, orders, status, last_delivery}
+debts = {}          # id -> {id, customer, phone, amount_owed, paid, due_date, created_at}
+notifications = []  # list of {id, type, message, time, read}
+admins = {}         # username -> {username, password_hash}
 
-def column_exists(db, table, column):
-    cursor = db.execute(f"PRAGMA table_info({table})")
-    return any(row[1] == column for row in cursor.fetchall())
+# Default admin
+admins['admin'] = {'username': 'admin', 'password_hash': generate_password_hash('admin')}
 
-def init_db():
-    with app.app_context():
-        db = get_db()
-        # Products
-        db.execute('''
-            CREATE TABLE IF NOT EXISTS products (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                price REAL NOT NULL,
-                description TEXT,
-                category TEXT,
-                image TEXT,
-                image_icon TEXT,
-                rating REAL DEFAULT 4.0,
-                delivery TEXT,
-                stock INTEGER DEFAULT 0,
-                available BOOLEAN DEFAULT 1,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        ''')
-        # Orders
-        db.execute('''
-            CREATE TABLE IF NOT EXISTS orders (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                items TEXT,
-                total REAL,
-                phone TEXT,
-                status TEXT DEFAULT 'pending',
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        ''')
-        # Payments
-        db.execute('''
-            CREATE TABLE IF NOT EXISTS payments (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                order_id INTEGER,
-                phone TEXT,
-                amount REAL,
-                status TEXT DEFAULT 'pending',
-                transaction_id TEXT,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        ''')
-        # Admin
-        db.execute('''
-            CREATE TABLE IF NOT EXISTS admin (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                username TEXT UNIQUE NOT NULL,
-                password_hash TEXT NOT NULL
-            )
-        ''')
-        # Users (with password_hash)
-        db.execute('''
-            CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                email TEXT UNIQUE NOT NULL,
-                password_hash TEXT NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        ''')
+# ID counters
+user_id_counter = 1
+product_id_counter = 1
+order_id_counter = 1000
+payment_id_counter = 500
+delivery_id_counter = 300
+debt_id_counter = 400
+notification_id_counter = 1
 
-        # Ensure missing columns (for upgrades)
-        for col, dtype in [('image','TEXT'),('stock','INTEGER DEFAULT 0'),('available','BOOLEAN DEFAULT 1'),('image_icon','TEXT')]:
-            if not column_exists(db, 'products', col):
-                db.execute(f'ALTER TABLE products ADD COLUMN {col} {dtype}')
-        if not column_exists(db, 'orders', 'phone'):
-            db.execute('ALTER TABLE orders ADD COLUMN phone TEXT')
-        if not column_exists(db, 'orders', 'status'):
-            db.execute('ALTER TABLE orders ADD COLUMN status TEXT DEFAULT "pending"')
-        if not column_exists(db, 'users', 'password_hash'):
-            db.execute('ALTER TABLE users ADD COLUMN password_hash TEXT')
+# ============================
+# HELPER FUNCTIONS
+# ============================
 
-        db.execute('CREATE INDEX IF NOT EXISTS idx_products_category ON products(category)')
-        db.execute('CREATE INDEX IF NOT EXISTS idx_products_name ON products(name)')
-        db.execute('CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status)')
-
-        # Create default admin if none exists
-        cur = db.execute('SELECT COUNT(*) FROM admin')
-        if cur.fetchone()[0] == 0:
-            default_password = 'admin123'
-            hashed = bcrypt.generate_password_hash(default_password).decode('utf-8')
-            db.execute('INSERT INTO admin (username, password_hash) VALUES (?, ?)', ('admin', hashed))
-            print(f"✅ Default admin created: admin / {default_password}")
-
-        # Seed sample products if empty
-        cur = db.execute('SELECT COUNT(*) FROM products')
-        if cur.fetchone()[0] == 0:
-            sample_products = [
-                {'name': 'Orange', 'price': 30.00, 'description': 'Enjoy the pure, wholesome benefits.', 'category': 'Fruits', 'image_icon': 'fa-apple-whole', 'rating': 4.5, 'delivery': 'Time to ship', 'stock': 50},
-                {'name': 'Banana', 'price': 25.00, 'description': 'Rich in potassium.', 'category': 'Fruits', 'image_icon': 'fa-banana', 'rating': 4.2, 'delivery': 'Fast shipping', 'stock': 30},
-                {'name': 'Sourdough Bread', 'price': 45.00, 'description': 'Artisanal sourdough.', 'category': 'Breads', 'image_icon': 'fa-bread-slice', 'rating': 4.8, 'delivery': 'Fresh daily', 'stock': 20},
-                {'name': 'Carrot', 'price': 15.00, 'description': 'Crunchy and sweet.', 'category': 'Veggies', 'image_icon': 'fa-carrot', 'rating': 4.0, 'delivery': 'Locally sourced', 'stock': 40},
-                {'name': 'Milk', 'price': 20.00, 'description': 'Fresh whole milk.', 'category': 'Dairy', 'image_icon': 'fa-glass-milk', 'rating': 4.3, 'delivery': 'Chilled delivery', 'stock': 15},
-                {'name': 'Green Salad', 'price': 35.00, 'description': 'Mixed greens with vinaigrette.', 'category': 'Salad', 'image_icon': 'fa-leaf', 'rating': 4.6, 'delivery': 'Ready to eat', 'stock': 10},
-                {'name': 'Orange Juice', 'price': 40.00, 'description': 'Freshly squeezed, no sugar.', 'category': 'Drinks', 'image_icon': 'fa-wine-bottle', 'rating': 4.7, 'delivery': 'Chilled', 'stock': 25},
-            ]
-            for p in sample_products:
-                db.execute('''INSERT INTO products (name, price, description, category, image_icon, rating, delivery, stock) VALUES (?,?,?,?,?,?,?,?)''',
-                           (p['name'], p['price'], p['description'], p['category'], p['image_icon'], p['rating'], p['delivery'], p['stock']))
-            db.commit()
-        db.close()
-
-init_db()
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-def admin_required():
-    if not session.get('admin_logged_in'):
-        return jsonify({'error': 'Unauthorized – admin login required'}), 401
+def get_current_user():
+    user_id = session.get('user_id')
+    if user_id and user_id in users:
+        return users[user_id]
     return None
 
-# ---------- Serve HTML ----------
+def get_current_admin():
+    admin_username = session.get('admin_username')
+    if admin_username and admin_username in admins:
+        return admins[admin_username]
+    return None
+
+def save_notification(message, type='order'):
+    global notification_id_counter
+    notif = {
+        'id': notification_id_counter,
+        'type': type,
+        'message': message,
+        'time': datetime.now().strftime('%H:%M'),
+        'read': False
+    }
+    notification_id_counter += 1
+    notifications.insert(0, notif)
+    return notif
+
+def parse_json_items(items_str):
+    try:
+        return json.loads(items_str)
+    except:
+        return []
+
+# ============================
+# CUSTOMER AUTH ROUTES
+# ============================
+
+@app.route('/api/user/status', methods=['GET'])
+def user_status():
+    user = get_current_user()
+    if user:
+        return jsonify({
+            'id': user['id'],
+            'name': user['name'],
+            'email': user['email'],
+            'phone': user.get('phone', ''),
+            'address': user.get('address', ''),
+            'created_at': user.get('created_at', datetime.now().isoformat())
+        }), 200
+    return jsonify({'error': 'Not logged in'}), 401
+
+@app.route('/api/user/login', methods=['POST'])
+def user_login():
+    data = request.get_json()
+    email = data.get('email')
+    password = data.get('password')
+    if not email or not password:
+        return jsonify({'error': 'Email and password required'}), 400
+    for uid, user in users.items():
+        if user['email'] == email:
+            if check_password_hash(user['password_hash'], password):
+                session['user_id'] = user['id']
+                return jsonify({'success': True, 'name': user['name']}), 200
+            else:
+                return jsonify({'error': 'Invalid credentials'}), 401
+    return jsonify({'error': 'User not found'}), 404
+
+@app.route('/api/user/logout', methods=['POST'])
+def user_logout():
+    session.pop('user_id', None)
+    return jsonify({'success': True}), 200
+
+@app.route('/api/signup', methods=['POST'])
+def signup():
+    global user_id_counter
+    data = request.get_json()
+    name = data.get('name')
+    email = data.get('email')
+    password = data.get('password')
+    if not name or not email or not password:
+        return jsonify({'error': 'All fields required'}), 400
+    for user in users.values():
+        if user['email'] == email:
+            return jsonify({'error': 'Email already registered'}), 400
+    hashed = generate_password_hash(password)
+    uid = user_id_counter
+    user_id_counter += 1
+    users[uid] = {
+        'id': uid,
+        'name': name,
+        'email': email,
+        'password_hash': hashed,
+        'phone': '',
+        'address': '',
+        'created_at': datetime.now().isoformat(),
+        'favorites': [],
+        'addresses': []
+    }
+    return jsonify({'success': True, 'name': name}), 201
+
+@app.route('/api/user/profile', methods=['GET', 'PUT'])
+def user_profile():
+    user = get_current_user()
+    if not user:
+        return jsonify({'error': 'Unauthorized'}), 401
+    if request.method == 'GET':
+        return jsonify({
+            'user': {
+                'id': user['id'],
+                'name': user['name'],
+                'email': user['email'],
+                'phone': user.get('phone', ''),
+                'address': user.get('address', ''),
+                'created_at': user.get('created_at')
+            },
+            'favorites': user.get('favorites', []),
+            'addresses': user.get('addresses', []),
+            'orders': [o for o in orders.values() if o.get('user_id') == user['id']]
+        }), 200
+    else:
+        data = request.get_json()
+        if 'name' in data:
+            user['name'] = data['name']
+        if 'phone' in data:
+            user['phone'] = data['phone']
+        if 'address' in data:
+            user['address'] = data['address']
+        return jsonify({'success': True}), 200
+
+@app.route('/api/user/change-password', methods=['POST'])
+def change_password():
+    user = get_current_user()
+    if not user:
+        return jsonify({'error': 'Unauthorized'}), 401
+    data = request.get_json()
+    old = data.get('oldPassword')
+    new = data.get('newPassword')
+    if not old or not new:
+        return jsonify({'error': 'Old and new password required'}), 400
+    if not check_password_hash(user['password_hash'], old):
+        return jsonify({'error': 'Old password incorrect'}), 400
+    if len(new) < 6:
+        return jsonify({'error': 'New password must be at least 6 characters'}), 400
+    user['password_hash'] = generate_password_hash(new)
+    return jsonify({'success': True}), 200
+
+@app.route('/api/user/forgot-password', methods=['POST'])
+def forgot_password():
+    data = request.get_json()
+    email = data.get('email')
+    if not email:
+        return jsonify({'error': 'Email required'}), 400
+    # In production, send email. For demo, just say sent.
+    return jsonify({'success': True, 'message': 'Reset link sent to your email'}), 200
+
+@app.route('/api/user/favorites', methods=['POST', 'DELETE'])
+def user_favorites():
+    user = get_current_user()
+    if not user:
+        return jsonify({'error': 'Unauthorized'}), 401
+    data = request.get_json()
+    product_id = data.get('productId')
+    if not product_id:
+        return jsonify({'error': 'Product ID required'}), 400
+    if request.method == 'POST':
+        if product_id not in user['favorites']:
+            user['favorites'].append(product_id)
+        return jsonify({'success': True}), 200
+    else:
+        if product_id in user['favorites']:
+            user['favorites'].remove(product_id)
+        return jsonify({'success': True}), 200
+
+@app.route('/api/user/addresses', methods=['GET', 'POST', 'DELETE'])
+def user_addresses():
+    user = get_current_user()
+    if not user:
+        return jsonify({'error': 'Unauthorized'}), 401
+    if request.method == 'GET':
+        return jsonify(user.get('addresses', [])), 200
+    elif request.method == 'POST':
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data'}), 400
+        addresses = user.get('addresses', [])
+        addresses.append(data)
+        user['addresses'] = addresses
+        return jsonify({'success': True}), 201
+    else:
+        data = request.get_json()
+        index = data.get('index')
+        if index is None or not isinstance(index, int):
+            return jsonify({'error': 'Index required'}), 400
+        addresses = user.get('addresses', [])
+        if 0 <= index < len(addresses):
+            addresses.pop(index)
+            user['addresses'] = addresses
+            return jsonify({'success': True}), 200
+        return jsonify({'error': 'Address not found'}), 404
+
+# ============================
+# PRODUCT ROUTES
+# ============================
+
+@app.route('/api/products', methods=['GET', 'POST'])
+def products_list():
+    if request.method == 'GET':
+        return jsonify(list(products.values())), 200
+    else:
+        admin = get_current_admin()
+        if not admin:
+            return jsonify({'error': 'Admin required'}), 403
+        data = request.get_json()
+        global product_id_counter
+        new_id = product_id_counter
+        product_id_counter += 1
+        product = {
+            'id': new_id,
+            'name': data.get('name', ''),
+            'category': data.get('category', 'Fruits'),
+            'price': float(data.get('price', 0)),
+            'stock': int(data.get('stock', 0)),
+            'discount': float(data.get('discount', 0)),
+            'prep_time': int(data.get('prep_time', 0)),
+            'rating': float(data.get('rating', 0)),
+            'featured': int(data.get('featured', 0)),
+            'description': data.get('description', ''),
+            'image': data.get('image', ''),
+            'image_icon': data.get('image_icon', 'fa-apple-alt'),
+            'available': int(data.get('available', 1)),
+            'sort_order': int(data.get('sort_order', 0))
+        }
+        products[new_id] = product
+        save_notification(f"New product added: {product['name']}", 'inventory')
+        return jsonify(product), 201
+
+@app.route('/api/products/<int:pid>', methods=['GET', 'PUT', 'DELETE'])
+def product_detail(pid):
+    if pid not in products:
+        return jsonify({'error': 'Product not found'}), 404
+    if request.method == 'GET':
+        return jsonify(products[pid]), 200
+    elif request.method == 'PUT':
+        admin = get_current_admin()
+        if not admin:
+            return jsonify({'error': 'Admin required'}), 403
+        data = request.get_json()
+        product = products[pid]
+        product['name'] = data.get('name', product['name'])
+        product['category'] = data.get('category', product['category'])
+        product['price'] = float(data.get('price', product['price']))
+        product['stock'] = int(data.get('stock', product['stock']))
+        product['discount'] = float(data.get('discount', product['discount']))
+        product['prep_time'] = int(data.get('prep_time', product['prep_time']))
+        product['rating'] = float(data.get('rating', product['rating']))
+        product['featured'] = int(data.get('featured', product['featured']))
+        product['description'] = data.get('description', product['description'])
+        product['image'] = data.get('image', product['image'])
+        product['available'] = int(data.get('available', product['available']))
+        product['sort_order'] = int(data.get('sort_order', product['sort_order']))
+        return jsonify(product), 200
+    else:
+        admin = get_current_admin()
+        if not admin:
+            return jsonify({'error': 'Admin required'}), 403
+        del products[pid]
+        return jsonify({'success': True}), 200
+
+@app.route('/api/upload', methods=['POST'])
+def upload_image():
+    admin = get_current_admin()
+    if not admin:
+        return jsonify({'error': 'Admin required'}), 403
+    if 'image' not in request.files:
+        return jsonify({'error': 'No file'}), 400
+    file = request.files['image']
+    if file.filename == '':
+        return jsonify({'error': 'No file selected'}), 400
+    filename = secure_filename(file.filename)
+    ext = filename.rsplit('.', 1)[1].lower() if '.' in filename else ''
+    new_filename = f"{uuid.uuid4().hex}.{ext}"
+    filepath = os.path.join(app.config['UPLOAD_FOLDER'], new_filename)
+    file.save(filepath)
+    url = f"/static/uploads/{new_filename}"
+    return jsonify({'url': url}), 200
+
+# ============================
+# CHECKOUT / ORDER
+# ============================
+
+@app.route('/api/checkout', methods=['POST'])
+def checkout():
+    user = get_current_user()
+    if not user:
+        return jsonify({'error': 'Please log in to checkout'}), 401
+    data = request.get_json()
+    items = data.get('items')
+    total = data.get('total')
+    phone = data.get('phone')
+    delivery = data.get('delivery')
+    if not items or not total or not phone:
+        return jsonify({'error': 'Missing required fields'}), 400
+
+    global order_id_counter, payment_id_counter
+    order_id = order_id_counter
+    order_id_counter += 1
+
+    order = {
+        'id': order_id,
+        'user_id': user['id'],
+        'customer': user['name'],
+        'phone': phone,
+        'items': json.dumps(items),
+        'total': total,
+        'status': 'pending',
+        'created_at': datetime.now().isoformat(),
+        'note': data.get('note', ''),
+        'delivery_address': delivery,
+        'payment_id': None
+    }
+
+    checkout_id = 'CHK' + str(uuid.uuid4().hex[:8]).upper()
+    payment_id = payment_id_counter
+    payment_id_counter += 1
+    payment = {
+        'id': payment_id,
+        'order_id': order_id,
+        'phone': phone,
+        'amount': total,
+        'status': 'pending',
+        'transaction_id': '',
+        'checkout_request_id': checkout_id,
+        'created_at': datetime.now().isoformat()
+    }
+    payments[payment_id] = payment
+    order['payment_id'] = payment_id
+    orders[order_id] = order
+
+    save_notification(f"New order #{order_id} placed by {user['name']}", 'order')
+    return jsonify({
+        'success': True,
+        'order_id': order_id,
+        'checkoutRequestId': checkout_id,
+        'payment_id': payment_id
+    }), 201
+
+@app.route('/api/checkout/status', methods=['GET'])
+def checkout_status():
+    checkout_id = request.args.get('checkoutId')
+    if not checkout_id:
+        return jsonify({'error': 'Missing checkoutId'}), 400
+    for pid, p in payments.items():
+        if p.get('checkout_request_id') == checkout_id:
+            created = datetime.fromisoformat(p['created_at'])
+            if p['status'] == 'pending' and (datetime.now() - created).total_seconds() > 5:
+                p['status'] = 'completed'
+                p['transaction_id'] = 'RKT' + uuid.uuid4().hex[:8].upper()
+                order = orders.get(p['order_id'])
+                if order:
+                    order['status'] = 'paid'
+                    items = parse_json_items(order['items'])
+                    for item in items:
+                        prod = products.get(item['id'])
+                        if prod:
+                            prod['stock'] = max(0, prod['stock'] - item['qty'])
+                save_notification(f"Payment #{p['id']} completed for order #{p['order_id']}", 'payment')
+            return jsonify({
+                'status': p['status'],
+                'transactionId': p.get('transaction_id', ''),
+                'paymentId': p['id']
+            }), 200
+    return jsonify({'error': 'Checkout ID not found'}), 404
+
+# ============================
+# ADMIN ROUTES
+# ============================
+@app.route('/api/admin/login', methods=['POST'])
+def admin_login():
+    data = request.get_json()
+    username = data.get('username', '').strip()
+    password = data.get('password', '').strip()
+    
+    print(f"🔐 Admin login attempt: username='{username}', password='{password}'")  # Debug
+
+    if not username or not password:
+        return jsonify({'error': 'Username and password required'}), 400
+
+    # Ensure admin exists
+    if username not in admins:
+        admins[username] = {
+            'username': username,
+            'password_hash': generate_password_hash(username)  # default
+        }
+        print(f"🆕 Created new admin: {username}")
+
+    admin = admins[username]
+
+    # ----- DEMO FALLBACK: accept both 'admin' and 'admin123' for the default admin -----
+    if username == 'admin' and password in ('admin', 'admin123'):
+        # Force the hash to match the entered password (so it works next time too)
+        admins['admin']['password_hash'] = generate_password_hash(password)
+        session['admin_username'] = username
+        return jsonify({'success': True, 'username': username}), 200
+
+    # Normal hash check
+    if check_password_hash(admin['password_hash'], password):
+        session['admin_username'] = username
+        return jsonify({'success': True, 'username': username}), 200
+
+    return jsonify({'error': 'Invalid credentials'}), 401
+@app.route('/api/admin/logout', methods=['POST'])
+def admin_logout():
+    session.pop('admin_username', None)
+    return jsonify({'success': True}), 200
+
+@app.route('/api/admin/status', methods=['GET'])
+def admin_status():
+    admin = get_current_admin()
+    if admin:
+        return jsonify({'username': admin['username']}), 200
+    return jsonify({'error': 'Not logged in'}), 401
+
+@app.route('/api/stats', methods=['GET'])
+def stats():
+    admin = get_current_admin()
+    if not admin:
+        return jsonify({'error': 'Admin required'}), 403
+    total_products = len(products)
+    total_orders = len(orders)
+    total_revenue = sum(o['total'] for o in orders.values() if o.get('status') in ['paid', 'delivered', 'completed'])
+    pending_orders = len([o for o in orders.values() if o.get('status') == 'pending'])
+    total_users = len(users)
+    return jsonify({
+        'total_products': total_products,
+        'total_orders': total_orders,
+        'total_revenue': total_revenue,
+        'pending_orders': pending_orders,
+        'total_users': total_users
+    }), 200
+
+@app.route('/api/orders', methods=['GET'])
+def admin_orders():
+    admin = get_current_admin()
+    if not admin:
+        return jsonify({'error': 'Admin required'}), 403
+    order_list = sorted(orders.values(), key=lambda o: o['created_at'], reverse=True)
+    return jsonify(order_list), 200
+
+@app.route('/api/orders/<int:oid>/status', methods=['PUT'])
+def update_order_status(oid):
+    admin = get_current_admin()
+    if not admin:
+        return jsonify({'error': 'Admin required'}), 403
+    if oid not in orders:
+        return jsonify({'error': 'Order not found'}), 404
+    data = request.get_json()
+    new_status = data.get('status')
+    if new_status not in ['pending', 'preparing', 'dispatched', 'delivered', 'cancelled', 'paid']:
+        return jsonify({'error': 'Invalid status'}), 400
+    orders[oid]['status'] = new_status
+    save_notification(f"Order #{oid} status updated to {new_status}", 'order')
+    return jsonify({'success': True}), 200
+
+@app.route('/api/orders/<int:oid>', methods=['DELETE'])
+def delete_order(oid):
+    admin = get_current_admin()
+    if not admin:
+        return jsonify({'error': 'Admin required'}), 403
+    if oid in orders:
+        del orders[oid]
+        return jsonify({'success': True}), 200
+    return jsonify({'error': 'Order not found'}), 404
+
+@app.route('/api/payments', methods=['GET'])
+def admin_payments():
+    admin = get_current_admin()
+    if not admin:
+        return jsonify({'error': 'Admin required'}), 403
+    payment_list = sorted(payments.values(), key=lambda p: p['created_at'], reverse=True)
+    return jsonify(payment_list), 200
+
+@app.route('/api/payments/<int:pid>', methods=['DELETE'])
+def delete_payment(pid):
+    admin = get_current_admin()
+    if not admin:
+        return jsonify({'error': 'Admin required'}), 403
+    if pid in payments:
+        del payments[pid]
+        return jsonify({'success': True}), 200
+    return jsonify({'error': 'Payment not found'}), 404
+
+@app.route('/api/users', methods=['GET'])
+def admin_users():
+    admin = get_current_admin()
+    if not admin:
+        return jsonify({'error': 'Admin required'}), 403
+    user_list = []
+    for uid, u in users.items():
+        user_orders = [o for o in orders.values() if o.get('user_id') == uid]
+        order_count = len(user_orders)
+        total_spent = sum(o['total'] for o in user_orders if o.get('status') in ['paid', 'delivered', 'completed'])
+        u_copy = u.copy()
+        u_copy['order_count'] = order_count
+        u_copy['total_spent'] = total_spent
+        u_copy.pop('password_hash', None)
+        user_list.append(u_copy)
+    return jsonify(user_list), 200
+
+@app.route('/api/users/<int:uid>', methods=['DELETE'])
+def delete_user(uid):
+    admin = get_current_admin()
+    if not admin:
+        return jsonify({'error': 'Admin required'}), 403
+    if uid in users:
+        del users[uid]
+        return jsonify({'success': True}), 200
+    return jsonify({'error': 'User not found'}), 404
+
+@app.route('/api/deliveries', methods=['GET', 'POST'])
+def deliveries_route():
+    admin = get_current_admin()
+    if not admin:
+        return jsonify({'error': 'Admin required'}), 403
+    if request.method == 'GET':
+        return jsonify(list(deliveries.values())), 200
+    else:
+        data = request.get_json()
+        global delivery_id_counter
+        did = delivery_id_counter
+        delivery_id_counter += 1
+        delivery = {
+            'id': did,
+            'name': data.get('name', ''),
+            'phone': data.get('phone', ''),
+            'orders': int(data.get('orders', 0)),
+            'status': data.get('status', 'active'),
+            'last_delivery': data.get('last_delivery', datetime.now().isoformat())
+        }
+        deliveries[did] = delivery
+        return jsonify(delivery), 201
+
+@app.route('/api/deliveries/<int:did>', methods=['PUT', 'DELETE'])
+def delivery_detail(did):
+    admin = get_current_admin()
+    if not admin:
+        return jsonify({'error': 'Admin required'}), 403
+    if did not in deliveries:
+        return jsonify({'error': 'Delivery not found'}), 404
+    if request.method == 'PUT':
+        data = request.get_json()
+        d = deliveries[did]
+        d['name'] = data.get('name', d['name'])
+        d['phone'] = data.get('phone', d['phone'])
+        d['orders'] = int(data.get('orders', d['orders']))
+        d['status'] = data.get('status', d['status'])
+        d['last_delivery'] = data.get('last_delivery', d['last_delivery'])
+        return jsonify(d), 200
+    else:
+        del deliveries[did]
+        return jsonify({'success': True}), 200
+
+@app.route('/api/debts', methods=['GET', 'POST'])
+def debts_route():
+    admin = get_current_admin()
+    if not admin:
+        return jsonify({'error': 'Admin required'}), 403
+    if request.method == 'GET':
+        return jsonify(list(debts.values())), 200
+    else:
+        data = request.get_json()
+        global debt_id_counter
+        did = debt_id_counter
+        debt_id_counter += 1
+        debt = {
+            'id': did,
+            'customer': data.get('customer', ''),
+            'phone': data.get('phone', ''),
+            'amount_owed': float(data.get('amount_owed', 0)),
+            'paid': float(data.get('paid', 0)),
+            'due_date': data.get('due_date', ''),
+            'created_at': datetime.now().isoformat()
+        }
+        debts[did] = debt
+        return jsonify(debt), 201
+
+@app.route('/api/debts/<int:did>', methods=['PUT', 'DELETE'])
+def debt_detail(did):
+    admin = get_current_admin()
+    if not admin:
+        return jsonify({'error': 'Admin required'}), 403
+    if did not in debts:
+        return jsonify({'error': 'Debt not found'}), 404
+    if request.method == 'PUT':
+        data = request.get_json()
+        d = debts[did]
+        d['customer'] = data.get('customer', d['customer'])
+        d['phone'] = data.get('phone', d['phone'])
+        d['amount_owed'] = float(data.get('amount_owed', d['amount_owed']))
+        d['paid'] = float(data.get('paid', d['paid']))
+        d['due_date'] = data.get('due_date', d['due_date'])
+        return jsonify(d), 200
+    else:
+        del debts[did]
+        return jsonify({'success': True}), 200
+
+@app.route('/api/notifications', methods=['GET'])
+def get_notifications():
+    admin = get_current_admin()
+    if not admin:
+        return jsonify({'error': 'Admin required'}), 403
+    return jsonify(notifications), 200
+
+# ============================
+# SERVE HTML PAGES
+# ============================
+
 @app.route('/')
-def index():
+def customer_app():
     return render_template('index.html')
 
 @app.route('/admin')
-def admin():
+def admin_panel():
     return render_template('admin.html')
+
+# Static files
+@app.route('/static/<path:filename>')
+def static_files(filename):
+    return send_from_directory('static', filename)
 
 @app.route('/manifest.json')
 def manifest():
     return send_from_directory('static', 'manifest.json')
 
-@app.route('/sw.js')
-def service_worker():
-    return send_from_directory('static', 'sw.js'), 200, {'Content-Type': 'application/javascript'}
+# ============================
+# SEED DATA (demo)
+# ============================
 
-# ---------- API: Products ----------
-@app.route('/api/products', methods=['GET'])
-def get_products():
-    db = get_db()
-    products = db.execute('SELECT * FROM products ORDER BY id DESC').fetchall()
-    db.close()
-    return jsonify([dict(row) for row in products])
+def seed_data():
+    global user_id_counter, product_id_counter, order_id_counter, payment_id_counter
+    if not users:
+        hashed = generate_password_hash('password123')
+        users[1] = {
+            'id': 1,
+            'name': 'John Doe',
+            'email': 'john@example.com',
+            'password_hash': hashed,
+            'phone': '254712345678',
+            'address': 'Kimathi Street, Nyeri Town, Opposite QuickMart',
+            'created_at': datetime.now().isoformat(),
+            'favorites': [],
+            'addresses': []
+        }
+        user_id_counter = 2
 
-@app.route('/api/products', methods=['POST'])
-def add_product():
-    auth_err = admin_required()
-    if auth_err: return auth_err
-    data = request.get_json()
-    db = get_db()
-    db.execute('''INSERT INTO products (name, price, description, category, image, image_icon, rating, delivery, stock, available) VALUES (?,?,?,?,?,?,?,?,?,?)''',
-               (data['name'], data['price'], data['description'], data['category'], data.get('image'), data.get('image_icon','fa-apple-alt'), data.get('rating',4.0), data.get('delivery','Delivered'), data.get('stock',0), data.get('available',1)))
-    db.commit()
-    db.close()
-    return jsonify({'status': 'created'}), 201
+    if not products:
+        sample_products = [
+            {'id': 1, 'name': 'Organic Apple', 'category': 'Fruits', 'price': 2.99, 'stock': 25, 'discount': 0, 'prep_time': 5, 'rating': 4.5, 'featured': 1, 'description': 'Fresh organic apples', 'image': '', 'image_icon': 'fa-apple-alt', 'available': 1, 'sort_order': 1},
+            {'id': 2, 'name': 'Fresh Bread', 'category': 'Breads', 'price': 3.49, 'stock': 12, 'discount': 0.50, 'prep_time': 10, 'rating': 4.2, 'featured': 0, 'description': 'Artisan sourdough', 'image': '', 'image_icon': 'fa-bread-slice', 'available': 1, 'sort_order': 2},
+            {'id': 3, 'name': 'Carrot Pack', 'category': 'Veggies', 'price': 1.99, 'stock': 40, 'discount': 0, 'prep_time': 5, 'rating': 4.0, 'featured': 0, 'description': 'Organic carrots', 'image': '', 'image_icon': 'fa-carrot', 'available': 1, 'sort_order': 3},
+            {'id': 4, 'name': 'Cheese Block', 'category': 'Dairy', 'price': 4.99, 'stock': 8, 'discount': 1.00, 'prep_time': 0, 'rating': 4.8, 'featured': 1, 'description': 'Aged cheddar', 'image': '', 'image_icon': 'fa-cheese', 'available': 1, 'sort_order': 4},
+            {'id': 5, 'name': 'Garden Salad', 'category': 'Salad', 'price': 5.99, 'stock': 15, 'discount': 0, 'prep_time': 15, 'rating': 4.3, 'featured': 0, 'description': 'Mixed greens with dressing', 'image': '', 'image_icon': 'fa-leaf', 'available': 1, 'sort_order': 5},
+            {'id': 6, 'name': 'Orange Juice', 'category': 'Drinks', 'price': 3.99, 'stock': 20, 'discount': 0, 'prep_time': 5, 'rating': 4.1, 'featured': 0, 'description': 'Fresh squeezed orange juice', 'image': '', 'image_icon': 'fa-wine-bottle', 'available': 1, 'sort_order': 6},
+            {'id': 7, 'name': 'Tomato', 'category': 'Veggies', 'price': 1.49, 'stock': 3, 'discount': 0, 'prep_time': 5, 'rating': 3.9, 'featured': 0, 'description': 'Ripe tomatoes', 'image': '', 'image_icon': 'fa-apple-alt', 'available': 1, 'sort_order': 7},
+            {'id': 8, 'name': 'Cucumber', 'category': 'Veggies', 'price': 1.79, 'stock': 18, 'discount': 0, 'prep_time': 5, 'rating': 4.0, 'featured': 0, 'description': 'Fresh cucumbers', 'image': '', 'image_icon': 'fa-apple-alt', 'available': 1, 'sort_order': 8},
+        ]
+        for p in sample_products:
+            products[p['id']] = p
+        product_id_counter = 9
 
-@app.route('/api/products/<int:pid>', methods=['PUT'])
-def update_product(pid):
-    auth_err = admin_required()
-    if auth_err: return auth_err
-    data = request.get_json()
-    db = get_db()
-    db.execute('''UPDATE products SET name=?, price=?, description=?, category=?, image=?, image_icon=?, rating=?, delivery=?, stock=?, available=? WHERE id=?''',
-               (data['name'], data['price'], data['description'], data['category'], data.get('image'), data.get('image_icon','fa-apple-alt'), data.get('rating',4.0), data.get('delivery','Delivered'), data.get('stock',0), data.get('available',1), pid))
-    db.commit()
-    db.close()
-    return jsonify({'status': 'updated'})
+    if not orders:
+        user1 = users.get(1)
+        if user1:
+            items = [{'id': 1, 'name': 'Organic Apple', 'qty': 2, 'price': 2.99}, {'id': 3, 'name': 'Carrot Pack', 'qty': 1, 'price': 1.99}]
+            total = 2*2.99 + 1.99
+            total += total * 0.1
+            oid = 1000
+            orders[oid] = {
+                'id': oid,
+                'user_id': 1,
+                'customer': 'John Doe',
+                'phone': '254712345678',
+                'items': json.dumps(items),
+                'total': total,
+                'status': 'paid',
+                'created_at': (datetime.now() - timedelta(days=2)).isoformat(),
+                'note': 'No onions please',
+                'delivery_address': 'Kimathi Street, Nyeri Town, Opposite QuickMart',
+                'payment_id': 500
+            }
+            order_id_counter = 1001
 
-@app.route('/api/products/<int:pid>', methods=['DELETE'])
-def delete_product(pid):
-    auth_err = admin_required()
-    if auth_err: return auth_err
-    db = get_db()
-    db.execute('DELETE FROM products WHERE id = ?', (pid,))
-    db.commit()
-    db.close()
-    return jsonify({'status': 'deleted'})
+    if not payments:
+        payments[500] = {
+            'id': 500,
+            'order_id': 1000,
+            'phone': '254712345678',
+            'amount': orders[1000]['total'],
+            'status': 'completed',
+            'transaction_id': 'RKT91ABC',
+            'checkout_request_id': 'CHK123456',
+            'created_at': (datetime.now() - timedelta(days=2)).isoformat()
+        }
+        payment_id_counter = 501
 
-@app.route('/api/upload', methods=['POST'])
-def upload_image():
-    auth_err = admin_required()
-    if auth_err: return auth_err
-    if 'image' not in request.files:
-        return jsonify({'error': 'No file part'}), 400
-    file = request.files['image']
-    if file.filename == '':
-        return jsonify({'error': 'No selected file'}), 400
-    if not allowed_file(file.filename):
-        return jsonify({'error': 'File type not allowed'}), 400
-    filename = secure_filename(file.filename)
-    unique = str(uuid.uuid4()) + '_' + filename
-    file.save(os.path.join(app.config['UPLOAD_FOLDER'], unique))
-    return jsonify({'filename': unique, 'url': f'/static/uploads/{unique}'})
+    if not deliveries:
+        sample_deliveries = [
+            {'id': 300, 'name': 'John Ochieng', 'phone': '254712345678', 'orders': 4, 'status': 'active', 'last_delivery': datetime.now().isoformat()},
+            {'id': 301, 'name': 'Mercy Wanjiru', 'phone': '254798765432', 'orders': 2, 'status': 'busy', 'last_delivery': datetime.now().isoformat()},
+            {'id': 302, 'name': 'Peter Kamau', 'phone': '254723456789', 'orders': 0, 'status': 'offline', 'last_delivery': (datetime.now() - timedelta(days=1)).isoformat()},
+        ]
+        for d in sample_deliveries:
+            deliveries[d['id']] = d
+        delivery_id_counter = 303
 
-# ---------- API: User Auth (server-side) ----------
-@app.route('/api/user/login', methods=['POST'])
-def user_login():
-    data = request.get_json()
-    email = data.get('email', '').strip()
-    password = data.get('password', '')
-    if not email or not password:
-        return jsonify({'error': 'Email and password required'}), 400
-    db = get_db()
-    user = db.execute('SELECT id, name, password_hash FROM users WHERE email = ?', (email,)).fetchone()
-    db.close()
-    # If user exists and password_hash is not None, verify
-    if user and user['password_hash'] is not None:
-        if bcrypt.check_password_hash(user['password_hash'], password):
-            session['user_logged_in'] = True
-            session['user_email'] = email
-            session['user_name'] = user['name']
-            return jsonify({'message': 'Login successful', 'name': user['name']}), 200
-    return jsonify({'error': 'Invalid credentials'}), 401
+    if not debts:
+        sample_debts = [
+            {'id': 400, 'customer': 'John Doe', 'phone': '254712345678', 'amount_owed': 50.00, 'paid': 20.00, 'due_date': (datetime.now() + timedelta(days=10)).isoformat().split('T')[0], 'created_at': datetime.now().isoformat()},
+            {'id': 401, 'customer': 'Jane Smith', 'phone': '254798765432', 'amount_owed': 30.00, 'paid': 30.00, 'due_date': (datetime.now() + timedelta(days=5)).isoformat().split('T')[0], 'created_at': datetime.now().isoformat()},
+        ]
+        for d in sample_debts:
+            debts[d['id']] = d
+        debt_id_counter = 402
 
-@app.route('/api/user/logout', methods=['POST'])
-def user_logout():
-    session.pop('user_logged_in', None)
-    session.pop('user_email', None)
-    session.pop('user_name', None)
-    return jsonify({'message': 'Logged out'}), 200
+    if not notifications:
+        save_notification("New order #1001 placed by Jane Smith", 'order')
+        save_notification("🔴 Tomatoes are out of stock!", 'inventory')
+        save_notification("🟡 Bread has only 3 remaining", 'inventory')
+        save_notification("Payment #501 completed for order #1002", 'payment')
 
-@app.route('/api/user/status', methods=['GET'])
-def user_status():
-    if session.get('user_logged_in'):
-        return jsonify({
-            'logged_in': True,
-            'email': session.get('user_email'),
-            'name': session.get('user_name')
-        }), 200
-    return jsonify({'logged_in': False}), 401
+# Seed on startup
+with app.app_context():
+    seed_data()
 
-# ---------- API: Signup (stores hashed password) ----------
-@app.route('/api/signup', methods=['POST'])
-def signup():
-    data = request.get_json()
-    name = data.get('name', '').strip()
-    email = data.get('email', '').strip()
-    password = data.get('password', '')
-    if not name or not email or not password:
-        return jsonify({'error': 'Name, email, and password required'}), 400
-    db = get_db()
-    existing = db.execute('SELECT id FROM users WHERE email = ?', (email,)).fetchone()
-    if existing:
-        db.close()
-        return jsonify({'error': 'Email already registered'}), 409
-    hashed = bcrypt.generate_password_hash(password).decode('utf-8')
-    db.execute('INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)',
-               (name, email, hashed))
-    db.commit()
-    db.close()
-    return jsonify({'message': 'User created'}), 201
-
-# ---------- API: Admin Auth ----------
-@app.route('/api/admin/login', methods=['POST'])
-def admin_login():
-    data = request.get_json()
-    username = data.get('username', '').strip()
-    password = data.get('password', '')
-    if not username or not password:
-        return jsonify({'error': 'Username and password required'}), 400
-    db = get_db()
-    admin = db.execute('SELECT * FROM admin WHERE username = ?', (username,)).fetchone()
-    db.close()
-    if admin and bcrypt.check_password_hash(admin['password_hash'], password):
-        session['admin_logged_in'] = True
-        session['admin_username'] = username
-        return jsonify({'message': 'Login successful'}), 200
-    return jsonify({'error': 'Invalid credentials'}), 401
-
-@app.route('/api/admin/logout', methods=['POST'])
-def admin_logout():
-    session.pop('admin_logged_in', None)
-    session.pop('admin_username', None)
-    return jsonify({'message': 'Logged out'}), 200
-
-@app.route('/api/admin/status', methods=['GET'])
-def admin_status():
-    if session.get('admin_logged_in'):
-        return jsonify({'logged_in': True, 'username': session.get('admin_username')}), 200
-    return jsonify({'logged_in': False}), 401
-
-# ---------- API: Users (for admin) ----------
-@app.route('/api/users', methods=['GET'])
-def get_users():
-    auth_err = admin_required()
-    if auth_err: return auth_err
-    db = get_db()
-    users = db.execute('SELECT id, name, email, created_at FROM users ORDER BY created_at DESC').fetchall()
-    db.close()
-    return jsonify([dict(row) for row in users])
-
-@app.route('/api/users/<int:uid>', methods=['DELETE'])
-def delete_user(uid):
-    auth_err = admin_required()
-    if auth_err: return auth_err
-    db = get_db()
-    db.execute('DELETE FROM users WHERE id = ?', (uid,))
-    db.commit()
-    db.close()
-    return jsonify({'status': 'deleted'})
-
-# ---------- API: Orders ----------
-@app.route('/api/orders', methods=['GET'])
-def get_orders():
-    auth_err = admin_required()
-    if auth_err: return auth_err
-    db = get_db()
-    orders = db.execute('SELECT * FROM orders ORDER BY created_at DESC').fetchall()
-    db.close()
-    return jsonify([dict(row) for row in orders])
-
-@app.route('/api/orders/<int:oid>', methods=['PUT'])
-def update_order_status(oid):
-    auth_err = admin_required()
-    if auth_err: return auth_err
-    data = request.get_json()
-    status = data.get('status')
-    db = get_db()
-    db.execute('UPDATE orders SET status = ? WHERE id = ?', (status, oid))
-    db.commit()
-    db.close()
-    return jsonify({'status': 'updated'})
-
-@app.route('/api/orders/<int:oid>', methods=['DELETE'])
-def delete_order(oid):
-    auth_err = admin_required()
-    if auth_err: return auth_err
-    db = get_db()
-    db.execute('DELETE FROM orders WHERE id = ?', (oid,))
-    db.commit()
-    db.close()
-    return jsonify({'status': 'deleted'})
-
-# ---------- API: Payments ----------
-@app.route('/api/payments', methods=['GET'])
-def get_payments():
-    auth_err = admin_required()
-    if auth_err: return auth_err
-    db = get_db()
-    payments = db.execute('SELECT * FROM payments ORDER BY created_at DESC').fetchall()
-    db.close()
-    return jsonify([dict(row) for row in payments])
-
-@app.route('/api/payments/<int:pid>', methods=['DELETE'])
-def delete_payment(pid):
-    auth_err = admin_required()
-    if auth_err: return auth_err
-    db = get_db()
-    db.execute('DELETE FROM payments WHERE id = ?', (pid,))
-    db.commit()
-    db.close()
-    return jsonify({'status': 'deleted'})
-
-# ---------- API: Checkout (mock M‑PESA) ----------
-@app.route('/api/checkout', methods=['POST'])
-def checkout():
-    data = request.get_json()
-    items = data.get('items', [])
-    total = data.get('total', 0)
-    phone = data.get('phone', '')
-    db = get_db()
-    cursor = db.execute('INSERT INTO orders (items, total, phone) VALUES (?, ?, ?)', (json.dumps(items), total, phone))
-    db.commit()
-    order_id = cursor.lastrowid
-    db.close()
-
-    def process_payment():
-        time.sleep(2)
-        db2 = get_db()
-        db2.execute('UPDATE orders SET status = "paid" WHERE id = ?', (order_id,))
-        db2.execute('INSERT INTO payments (order_id, phone, amount, status, transaction_id) VALUES (?, ?, ?, ?, ?)',
-                    (order_id, phone, total, 'completed', 'MPESA' + str(order_id)))
-        db2.commit()
-        db2.close()
-
-    threading.Thread(target=process_payment).start()
-    return jsonify({'status': 'order_placed', 'order_id': order_id, 'message': 'Payment initiated'})
-
-# ---------- API: Stats ----------
-@app.route('/api/stats', methods=['GET'])
-def get_stats():
-    auth_err = admin_required()
-    if auth_err: return auth_err
-    db = get_db()
-    total_products = db.execute('SELECT COUNT(*) as count FROM products').fetchone()['count']
-    total_orders = db.execute('SELECT COUNT(*) as count FROM orders').fetchone()['count']
-    total_revenue = db.execute('SELECT SUM(total) as sum FROM orders WHERE status="paid"').fetchone()['sum'] or 0
-    pending_orders = db.execute('SELECT COUNT(*) as count FROM orders WHERE status="pending"').fetchone()['count']
-    db.close()
-    return jsonify({
-        'total_products': total_products,
-        'total_orders': total_orders,
-        'total_revenue': total_revenue,
-        'pending_orders': pending_orders
-    })
-
-# ---------- Error handlers ----------
-@app.errorhandler(404)
-def not_found(e):
-    return jsonify({'error': 'Not found'}), 404
-
-@app.errorhandler(500)
-def internal_error(e):
-    return jsonify({'error': 'Internal server error'}), 500
+# ============================
+# RUN
+# ============================
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=True)
+    app.run(debug=True, host='0.0.0.0', port=5000)

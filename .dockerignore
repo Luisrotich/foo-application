@@ -1,0 +1,10 @@
+.git
+.env
+.env.*
+!.env.example
+__pycache__
+*.pyc
+database.db
+admin_credentials.json
+static/uploads
+tests

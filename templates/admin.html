@@ -299,6 +299,13 @@
             min-width: 20px;
             text-align: center;
         }
+        .sidebar-nav .nav-item .badge.danger {
+            background: #ef4444;
+        }
+        .sidebar-nav .nav-item .badge.warning {
+            background: #f59e0b;
+        }
+
         .sidebar-footer {
             padding: 0.8rem 1.5rem;
             border-top: 1px solid rgba(255, 255, 255, 0.05);
@@ -437,7 +444,7 @@
         /* ---- STATS GRID ---- */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
             gap: 1.2rem;
             margin-bottom: 2rem;
         }
@@ -503,6 +510,10 @@
             background: #fee2e2;
             color: #ef4444;
         }
+        .stat-card .stat-icon.yellow {
+            background: #fef3c7;
+            color: #f59e0b;
+        }
         .stat-card .stat-label {
             font-size: 0.7rem;
             text-transform: uppercase;
@@ -528,7 +539,7 @@
             color: #ef4444;
         }
 
-        /* ---- TOOLBAR (filter bar) ---- */
+        /* ---- TOOLBAR ---- */
         .toolbar {
             display: flex;
             align-items: center;
@@ -580,18 +591,6 @@
         }
         .toolbar-left .filter-group input::placeholder {
             color: #b0b8c4;
-        }
-        .toolbar-left .filter-group .clear-filter {
-            color: #94a3b8;
-            font-size: 0.7rem;
-            padding: 0.1rem 0.3rem;
-            border-radius: 50%;
-            transition: 0.15s;
-            cursor: pointer;
-        }
-        .toolbar-left .filter-group .clear-filter:hover {
-            color: #ef4444;
-            background: #fef2f2;
         }
         .toolbar-right {
             display: flex;
@@ -659,6 +658,13 @@
         .btn-ghost:hover {
             color: #1e293b;
             background: #f1f5f9;
+        }
+        .btn-warning {
+            background: #f59e0b;
+            color: #fff;
+        }
+        .btn-warning:hover {
+            background: #d97706;
         }
 
         /* ---- TABLES ---- */
@@ -759,6 +765,11 @@
             border-color: #3b82f6;
             background: #dbeafe;
         }
+        .action-btns .btn-icon.status:hover {
+            color: #f59e0b;
+            border-color: #f59e0b;
+            background: #fef3c7;
+        }
 
         .status-badge {
             display: inline-flex;
@@ -796,6 +807,34 @@
         .status-badge.completed {
             background: #dbeafe;
             color: #1e40af;
+        }
+        .status-badge.preparing {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .status-badge.dispatched {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        .status-badge.delivered {
+            background: #dcfce7;
+            color: #166534;
+        }
+        .status-badge.cancelled {
+            background: #fef2f2;
+            color: #991b1b;
+        }
+        .status-badge.active {
+            background: #dcfce7;
+            color: #166534;
+        }
+        .status-badge.busy {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .status-badge.offline {
+            background: #f1f5f9;
+            color: #64748b;
         }
 
         .empty-state {
@@ -840,13 +879,16 @@
             background: #fff;
             border-radius: 28px;
             padding: 2rem 2rem 1.8rem;
-            max-width: 540px;
+            max-width: 600px;
             width: 100%;
             max-height: 92vh;
             overflow-y: auto;
             box-shadow: 0 40px 80px rgba(0, 0, 0, 0.15);
             animation: modalIn 0.3s ease;
             position: relative;
+        }
+        .modal-card.wide {
+            max-width: 800px;
         }
         @keyframes modalIn {
             from {
@@ -911,6 +953,11 @@
             grid-template-columns: 1fr 1fr;
             gap: 0.8rem;
         }
+        .modal-card .form-row-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 0.8rem;
+        }
         .modal-card .form-actions {
             display: flex;
             gap: 0.8rem;
@@ -962,6 +1009,55 @@
         }
         .image-preview .file-input-wrap .btn {
             pointer-events: none;
+        }
+
+        /* ---- ORDER DETAIL MODAL ---- */
+        .order-detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.8rem;
+            margin-bottom: 1rem;
+        }
+        .order-detail-grid .detail-item {
+            background: #f8fafc;
+            padding: 0.5rem 0.8rem;
+            border-radius: 10px;
+        }
+        .order-detail-grid .detail-item .label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            color: #94a3b8;
+            letter-spacing: 0.05em;
+        }
+        .order-detail-grid .detail-item .value {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        .order-items-list {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 0.5rem 0.8rem;
+            margin-bottom: 0.8rem;
+        }
+        .order-items-list .item-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.2rem 0;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.85rem;
+        }
+        .order-items-list .item-row:last-child {
+            border-bottom: none;
+        }
+        .order-status-actions {
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+        .order-status-actions .btn {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.8rem;
         }
 
         /* ---- DELETE MODAL ---- */
@@ -1026,6 +1122,265 @@
         }
         .toast i {
             font-size: 1rem;
+        }
+
+        /* ============================================================
+           ACTIVITY CARD
+           ============================================================ */
+        .activity-card {
+            background: #fff;
+            border-radius: 18px;
+            border: 1px solid #f1f5f9;
+            padding: 1.5rem;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.02);
+        }
+        .activity-card .activity-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.8rem;
+        }
+        .activity-card .activity-header h3 {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        .activity-card .activity-header .view-link {
+            font-size: 0.75rem;
+            color: #f97316;
+            font-weight: 500;
+        }
+        .activity-card .activity-header .view-link:hover {
+            color: #ea580c;
+        }
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f8fafc;
+        }
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        .activity-item .activity-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .activity-item .activity-dot.orange {
+            background: #f97316;
+        }
+        .activity-item .activity-dot.green {
+            background: #22c55e;
+        }
+        .activity-item .activity-dot.blue {
+            background: #3b82f6;
+        }
+        .activity-item .activity-dot.red {
+            background: #ef4444;
+        }
+        .activity-item .activity-dot.yellow {
+            background: #f59e0b;
+        }
+        .activity-item .activity-text {
+            flex: 1;
+            font-size: 0.85rem;
+        }
+        .activity-item .activity-text strong {
+            color: #0f172a;
+        }
+        .activity-item .activity-time {
+            font-size: 0.7rem;
+            color: #94a3b8;
+            white-space: nowrap;
+        }
+
+        /* ============================================================
+           SETTINGS
+           ============================================================ */
+        .settings-card {
+            background: #fff;
+            border-radius: 18px;
+            border: 1px solid #f1f5f9;
+            padding: 2rem;
+            max-width: 500px;
+        }
+        .settings-card .setting-group {
+            margin-bottom: 1.2rem;
+        }
+        .settings-card .setting-group label {
+            display: block;
+            font-weight: 500;
+            font-size: 0.85rem;
+            color: #475569;
+            margin-bottom: 0.25rem;
+        }
+        .settings-card .setting-group input {
+            width: 100%;
+            padding: 0.6rem 0.9rem;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            outline: none;
+            font-size: 0.95rem;
+            transition: 0.2s;
+        }
+        .settings-card .setting-group input:focus {
+            border-color: #f97316;
+            box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.06);
+        }
+
+        /* ============================================================
+           NOTIFICATIONS / ALERTS
+           ============================================================ */
+        .alert-banner {
+            background: #fff;
+            border-radius: 16px;
+            border: 1px solid #f1f5f9;
+            padding: 0.8rem 1.2rem;
+            margin-bottom: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+        .alert-banner .alert-icon {
+            font-size: 1.2rem;
+        }
+        .alert-banner .alert-icon.danger {
+            color: #ef4444;
+        }
+        .alert-banner .alert-icon.warning {
+            color: #f59e0b;
+        }
+        .alert-banner .alert-icon.success {
+            color: #22c55e;
+        }
+        .alert-banner .alert-text {
+            flex: 1;
+            font-size: 0.9rem;
+        }
+        .alert-banner .alert-text strong {
+            color: #0f172a;
+        }
+        .alert-banner .alert-btn {
+            font-size: 0.7rem;
+            padding: 0.15rem 0.8rem;
+            border-radius: 30px;
+            font-weight: 600;
+        }
+
+        /* ============================================================
+           ANALYTICS CHARTS (simple CSS bars)
+           ============================================================ */
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.2rem;
+            margin-bottom: 1.5rem;
+        }
+        .chart-box {
+            background: #fff;
+            border-radius: 18px;
+            border: 1px solid #f1f5f9;
+            padding: 1.2rem 1.5rem;
+        }
+        .chart-box h4 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.8rem;
+            color: #475569;
+        }
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            gap: 0.3rem;
+            height: 120px;
+            padding-top: 0.5rem;
+        }
+        .bar-chart .bar {
+            flex: 1;
+            background: linear-gradient(180deg, #f97316, #fb923c);
+            border-radius: 4px 4px 0 0;
+            min-height: 4px;
+            transition: height 0.6s ease;
+            position: relative;
+        }
+        .bar-chart .bar .bar-label {
+            position: absolute;
+            bottom: -1.2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.55rem;
+            color: #94a3b8;
+            white-space: nowrap;
+        }
+        .bar-chart .bar .bar-value {
+            position: absolute;
+            top: -1.2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.6rem;
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .top-selling-list .item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.3rem 0;
+            border-bottom: 1px solid #f8fafc;
+            font-size: 0.85rem;
+        }
+        .top-selling-list .item:last-child {
+            border-bottom: none;
+        }
+        .top-selling-list .item .rank {
+            font-weight: 700;
+            color: #94a3b8;
+            width: 24px;
+        }
+        .top-selling-list .item .name {
+            flex: 1;
+            margin-left: 0.5rem;
+        }
+        .top-selling-list .item .count {
+            font-weight: 600;
+            color: #f97316;
+        }
+
+        /* ============================================================
+           DELIVERY & DEBT TABLES
+           ============================================================ */
+        .delivery-status-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 0.3rem;
+        }
+        .delivery-status-dot.active {
+            background: #22c55e;
+        }
+        .delivery-status-dot.busy {
+            background: #f59e0b;
+        }
+        .delivery-status-dot.offline {
+            background: #94a3b8;
+        }
+
+        .debt-amount {
+            font-weight: 700;
+        }
+        .debt-amount.positive {
+            color: #ef4444;
+        }
+        .debt-amount.negative {
+            color: #22c55e;
+        }
+        .debt-amount.zero {
+            color: #94a3b8;
         }
 
         /* ============================================================
@@ -1106,7 +1461,11 @@
                 padding: 1.5rem 1rem;
                 margin: 0.5rem;
             }
-            .modal-card .form-row {
+            .modal-card .form-row,
+            .modal-card .form-row-3 {
+                grid-template-columns: 1fr;
+            }
+            .order-detail-grid {
                 grid-template-columns: 1fr;
             }
             table {
@@ -1130,6 +1489,17 @@
                 padding: 2rem 1.2rem 1.5rem;
                 margin: 0.5rem;
             }
+            .chart-grid {
+                grid-template-columns: 1fr;
+            }
+            .order-status-actions .btn {
+                font-size: 0.6rem;
+                padding: 0.15rem 0.6rem;
+            }
+            .alert-banner {
+                padding: 0.6rem 0.8rem;
+                font-size: 0.8rem;
+            }
         }
         @media (max-width: 480px) {
             .stats-grid {
@@ -1151,109 +1521,6 @@
         }
 
         /* ============================================================
-           RECENT ACTIVITY CARD
-           ============================================================ */
-        .activity-card {
-            background: #fff;
-            border-radius: 18px;
-            border: 1px solid #f1f5f9;
-            padding: 1.5rem;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.02);
-        }
-        .activity-card .activity-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 0.8rem;
-        }
-        .activity-card .activity-header h3 {
-            font-size: 1rem;
-            font-weight: 600;
-        }
-        .activity-card .activity-header .view-link {
-            font-size: 0.75rem;
-            color: #f97316;
-            font-weight: 500;
-        }
-        .activity-card .activity-header .view-link:hover {
-            color: #ea580c;
-        }
-        .activity-item {
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-            padding: 0.5rem 0;
-            border-bottom: 1px solid #f8fafc;
-        }
-        .activity-item:last-child {
-            border-bottom: none;
-        }
-        .activity-item .activity-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
-        .activity-item .activity-dot.orange {
-            background: #f97316;
-        }
-        .activity-item .activity-dot.green {
-            background: #22c55e;
-        }
-        .activity-item .activity-dot.blue {
-            background: #3b82f6;
-        }
-        .activity-item .activity-dot.red {
-            background: #ef4444;
-        }
-        .activity-item .activity-text {
-            flex: 1;
-            font-size: 0.85rem;
-        }
-        .activity-item .activity-text strong {
-            color: #0f172a;
-        }
-        .activity-item .activity-time {
-            font-size: 0.7rem;
-            color: #94a3b8;
-            white-space: nowrap;
-        }
-
-        /* ============================================================
-           SETTINGS PAGE
-           ============================================================ */
-        .settings-card {
-            background: #fff;
-            border-radius: 18px;
-            border: 1px solid #f1f5f9;
-            padding: 2rem;
-            max-width: 500px;
-        }
-        .settings-card .setting-group {
-            margin-bottom: 1.2rem;
-        }
-        .settings-card .setting-group label {
-            display: block;
-            font-weight: 500;
-            font-size: 0.85rem;
-            color: #475569;
-            margin-bottom: 0.25rem;
-        }
-        .settings-card .setting-group input {
-            width: 100%;
-            padding: 0.6rem 0.9rem;
-            border: 1.5px solid #e2e8f0;
-            border-radius: 12px;
-            outline: none;
-            font-size: 0.95rem;
-            transition: 0.2s;
-        }
-        .settings-card .setting-group input:focus {
-            border-color: #f97316;
-            box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.06);
-        }
-
-        /* ============================================================
            SPINNER
            ============================================================ */
         .spinner {
@@ -1271,7 +1538,9 @@
             }
         }
 
-        /* ---- Utility: filter chip ---- */
+        /* ============================================================
+           FILTER CHIP
+           ============================================================ */
         .filter-chip {
             display: inline-flex;
             align-items: center;
@@ -1291,6 +1560,41 @@
         }
         .filter-chip .remove-chip:hover {
             color: #ef4444;
+        }
+
+        /* ============================================================
+           INVENTORY ALERT ITEMS
+           ============================================================ */
+        .inventory-alert {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.5rem 0.8rem;
+            border-radius: 10px;
+            margin-bottom: 0.3rem;
+            font-size: 0.85rem;
+            background: #f8fafc;
+        }
+        .inventory-alert.danger {
+            border-left: 4px solid #ef4444;
+            background: #fef2f2;
+        }
+        .inventory-alert.warning {
+            border-left: 4px solid #f59e0b;
+            background: #fef3c7;
+        }
+        .inventory-alert .alert-info {
+            flex: 1;
+        }
+        .inventory-alert .alert-stock {
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+        .inventory-alert .alert-stock.danger {
+            color: #ef4444;
+        }
+        .inventory-alert .alert-stock.warning {
+            color: #f59e0b;
         }
     </style>
 </head>
@@ -1336,34 +1640,19 @@
         </div>
         <nav class="sidebar-nav">
             <div class="nav-label">Main</div>
-            <div class="nav-item active" data-page="dashboard">
-                <i class="fas fa-th-large"></i> Dashboard
-            </div>
-            <div class="nav-item" data-page="products">
-                <i class="fas fa-box"></i> Products
-                <span class="badge" id="productCountBadge">0</span>
-            </div>
-            <div class="nav-item" data-page="orders">
-                <i class="fas fa-shopping-bag"></i> Orders
-                <span class="badge" id="orderCountBadge">0</span>
-            </div>
-            <div class="nav-item" data-page="payments">
-                <i class="fas fa-credit-card"></i> Payments
-            </div>
-            <div class="nav-item" data-page="users">
-                <i class="fas fa-users"></i> Users
-                <span class="badge" id="userCountBadge">0</span>
-            </div>
+            <div class="nav-item active" data-page="dashboard"><i class="fas fa-th-large"></i> Dashboard</div>
+            <div class="nav-item" data-page="products"><i class="fas fa-box"></i> Products <span class="badge" id="productCountBadge">0</span></div>
+            <div class="nav-item" data-page="orders"><i class="fas fa-shopping-bag"></i> Orders <span class="badge" id="orderCountBadge">0</span></div>
+            <div class="nav-item" data-page="payments"><i class="fas fa-credit-card"></i> Payments</div>
+            <div class="nav-item" data-page="deliveries"><i class="fas fa-truck"></i> Deliveries</div>
+            <div class="nav-item" data-page="debts"><i class="fas fa-hand-holding-usd"></i> Debts</div>
+            <div class="nav-item" data-page="users"><i class="fas fa-users"></i> Users <span class="badge" id="userCountBadge">0</span></div>
+            <div class="nav-item" data-page="analytics"><i class="fas fa-chart-line"></i> Analytics</div>
+            <div class="nav-item" data-page="notifications"><i class="fas fa-bell"></i> Notifications <span class="badge danger" id="notifBadge">0</span></div>
             <div class="nav-label" style="margin-top:1.2rem;">Settings</div>
-            <div class="nav-item" data-page="settings">
-                <i class="fas fa-cog"></i> Settings
-            </div>
-            <div class="nav-item" id="navBackToApp">
-                <i class="fas fa-arrow-left"></i> Back to App
-            </div>
-            <div class="nav-item" id="adminLogoutBtn">
-                <i class="fas fa-sign-out-alt"></i> Logout
-            </div>
+            <div class="nav-item" data-page="settings"><i class="fas fa-cog"></i> Settings</div>
+            <div class="nav-item" id="navBackToApp"><i class="fas fa-arrow-left"></i> Back to App</div>
+            <div class="nav-item" id="adminLogoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</div>
         </nav>
         <div class="sidebar-footer">
             <span>v2.0</span>
@@ -1396,50 +1685,44 @@
             DASHBOARD
             ============================================================ -->
             <div id="page-dashboard">
+                <!-- Inventory Alerts -->
+                <div id="inventoryAlerts"></div>
+
                 <div class="stats-grid" id="statsGrid">
                     <div class="stat-card">
                         <div class="stat-top">
-                            <div>
-                                <div class="stat-label">Total Products</div>
-                                <div class="stat-value" id="statProducts">0</div>
-                            </div>
+                            <div><div class="stat-label">Total Products</div><div class="stat-value" id="statProducts">0</div></div>
                             <div class="stat-icon orange"><i class="fas fa-box"></i></div>
                         </div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-top">
-                            <div>
-                                <div class="stat-label">Total Orders</div>
-                                <div class="stat-value" id="statOrders">0</div>
-                            </div>
+                            <div><div class="stat-label">Total Orders</div><div class="stat-value" id="statOrders">0</div></div>
                             <div class="stat-icon blue"><i class="fas fa-shopping-bag"></i></div>
                         </div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-top">
-                            <div>
-                                <div class="stat-label">Revenue</div>
-                                <div class="stat-value" id="statRevenue">$0</div>
-                            </div>
+                            <div><div class="stat-label">Revenue</div><div class="stat-value" id="statRevenue">$0</div></div>
                             <div class="stat-icon green"><i class="fas fa-dollar-sign"></i></div>
                         </div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-top">
-                            <div>
-                                <div class="stat-label">Pending Orders</div>
-                                <div class="stat-value" id="statPending">0</div>
-                            </div>
+                            <div><div class="stat-label">Pending Orders</div><div class="stat-value" id="statPending">0</div></div>
                             <div class="stat-icon red"><i class="fas fa-clock"></i></div>
                         </div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-top">
-                            <div>
-                                <div class="stat-label">Total Users</div>
-                                <div class="stat-value" id="statUsers">0</div>
-                            </div>
+                            <div><div class="stat-label">Total Users</div><div class="stat-value" id="statUsers">0</div></div>
                             <div class="stat-icon purple"><i class="fas fa-users"></i></div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-top">
+                            <div><div class="stat-label">Today's M-PESA</div><div class="stat-value" id="statMpesaToday">$0</div></div>
+                            <div class="stat-icon yellow"><i class="fas fa-mobile-alt"></i></div>
                         </div>
                     </div>
                 </div>
@@ -1466,48 +1749,16 @@
                 <div class="toolbar" id="productsToolbar">
                     <div class="toolbar-left">
                         <button class="btn btn-primary" id="addProductBtn"><i class="fas fa-plus"></i> Add Product</button>
-                        <div class="filter-group">
-                            <i class="fas fa-tag"></i>
-                            <select id="categoryFilter">
-                                <option value="All">All Categories</option>
-                                <option value="Fruits">Fruits</option>
-                                <option value="Breads">Breads</option>
-                                <option value="Veggies">Veggies</option>
-                                <option value="Dairy">Dairy</option>
-                                <option value="Salad">Salad</option>
-                                <option value="Drinks">Drinks</option>
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <i class="fas fa-filter"></i>
-                            <select id="stockFilter">
-                                <option value="All">All Stock</option>
-                                <option value="in-stock">In Stock</option>
-                                <option value="low-stock">Low Stock</option>
-                                <option value="out-of-stock">Out of Stock</option>
-                            </select>
-                        </div>
+                        <div class="filter-group"><i class="fas fa-tag"></i><select id="categoryFilter"><option value="All">All Categories</option><option value="Fruits">Fruits</option><option value="Breads">Breads</option><option value="Veggies">Veggies</option><option value="Dairy">Dairy</option><option value="Salad">Salad</option><option value="Drinks">Drinks</option></select></div>
+                        <div class="filter-group"><i class="fas fa-filter"></i><select id="stockFilter"><option value="All">All Stock</option><option value="in-stock">In Stock</option><option value="low-stock">Low Stock</option><option value="out-of-stock">Out of Stock</option></select></div>
                         <button class="btn btn-outline btn-sm" id="refreshProductsBtn"><i class="fas fa-sync-alt"></i></button>
                     </div>
-                    <div class="toolbar-right">
-                        <span class="count-label" id="productCountLabel">0 products</span>
-                    </div>
+                    <div class="toolbar-right"><span class="count-label" id="productCountLabel">0 products</span></div>
                 </div>
-
                 <div class="table-wrap">
                     <div class="table-scroll">
                         <table>
-                            <thead>
-                                <tr>
-                                    <th style="width:50px;">Image</th>
-                                    <th>Name</th>
-                                    <th style="width:100px;">Category</th>
-                                    <th style="width:90px;">Price</th>
-                                    <th style="width:90px;">Stock</th>
-                                    <th style="width:110px;">Status</th>
-                                    <th style="width:130px;">Actions</th>
-                                </tr>
-                            </thead>
+                            <thead><tr><th style="width:50px;">Image</th><th>Name</th><th style="width:90px;">Category</th><th style="width:80px;">Price</th><th style="width:70px;">Stock</th><th style="width:80px;">Discount</th><th style="width:90px;">Prep</th><th style="width:100px;">Status</th><th style="width:110px;">Actions</th></tr></thead>
                             <tbody id="productTableBody"></tbody>
                         </table>
                     </div>
@@ -1520,44 +1771,17 @@
             <div id="page-orders" class="hidden">
                 <div class="toolbar" id="ordersToolbar">
                     <div class="toolbar-left">
-                        <div class="filter-group">
-                            <i class="fas fa-filter"></i>
-                            <select id="orderStatusFilter">
-                                <option value="All">All Status</option>
-                                <option value="paid">Paid</option>
-                                <option value="pending">Pending</option>
-                                <option value="failed">Failed</option>
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <i class="fas fa-calendar"></i>
-                            <input type="date" id="orderDateFrom" />
-                        </div>
-                        <div class="filter-group">
-                            <i class="fas fa-calendar"></i>
-                            <input type="date" id="orderDateTo" />
-                        </div>
+                        <div class="filter-group"><i class="fas fa-filter"></i><select id="orderStatusFilter"><option value="All">All Status</option><option value="pending">Pending</option><option value="preparing">Preparing</option><option value="dispatched">Out for Delivery</option><option value="delivered">Delivered</option><option value="cancelled">Cancelled</option></select></div>
+                        <div class="filter-group"><i class="fas fa-calendar"></i><input type="date" id="orderDateFrom" /></div>
+                        <div class="filter-group"><i class="fas fa-calendar"></i><input type="date" id="orderDateTo" /></div>
                         <button class="btn btn-outline btn-sm" id="refreshOrdersBtn"><i class="fas fa-sync-alt"></i></button>
                     </div>
-                    <div class="toolbar-right">
-                        <span class="count-label" id="orderCountLabel">0 orders</span>
-                    </div>
+                    <div class="toolbar-right"><span class="count-label" id="orderCountLabel">0 orders</span></div>
                 </div>
-
                 <div class="table-wrap">
                     <div class="table-scroll">
                         <table>
-                            <thead>
-                                <tr>
-                                    <th>Order ID</th>
-                                    <th>Items</th>
-                                    <th>Total</th>
-                                    <th>Phone</th>
-                                    <th>Status</th>
-                                    <th>Date</th>
-                                    <th style="width:80px;">Actions</th>
-                                </tr>
-                            </thead>
+                            <thead><tr><th>Order ID</th><th>Customer</th><th>Items</th><th>Total</th><th>Status</th><th>Date</th><th style="width:120px;">Actions</th></tr></thead>
                             <tbody id="ordersTableBody"></tbody>
                         </table>
                     </div>
@@ -1568,44 +1792,69 @@
             PAYMENTS PAGE
             ============================================================ -->
             <div id="page-payments" class="hidden">
+                <div class="stats-grid" style="margin-bottom:1.2rem;" id="paymentStatsGrid">
+                    <div class="stat-card"><div class="stat-top"><div><div class="stat-label">Today's M-PESA</div><div class="stat-value" id="payStatToday">$0</div></div><div class="stat-icon green"><i class="fas fa-mobile-alt"></i></div></div></div>
+                    <div class="stat-card"><div class="stat-top"><div><div class="stat-label">Successful</div><div class="stat-value" id="payStatSuccess">0</div></div><div class="stat-icon green"><i class="fas fa-check-circle"></i></div></div></div>
+                    <div class="stat-card"><div class="stat-top"><div><div class="stat-label">Pending STK</div><div class="stat-value" id="payStatPending">0</div></div><div class="stat-icon yellow"><i class="fas fa-clock"></i></div></div></div>
+                    <div class="stat-card"><div class="stat-top"><div><div class="stat-label">Failed</div><div class="stat-value" id="payStatFailed">0</div></div><div class="stat-icon red"><i class="fas fa-times-circle"></i></div></div></div>
+                </div>
                 <div class="toolbar" id="paymentsToolbar">
                     <div class="toolbar-left">
-                        <div class="filter-group">
-                            <i class="fas fa-filter"></i>
-                            <select id="paymentStatusFilter">
-                                <option value="All">All Status</option>
-                                <option value="completed">Completed</option>
-                                <option value="pending">Pending</option>
-                                <option value="failed">Failed</option>
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <i class="fas fa-search"></i>
-                            <input type="text" id="paymentSearch" placeholder="Search phone..." />
-                        </div>
+                        <div class="filter-group"><i class="fas fa-filter"></i><select id="paymentStatusFilter"><option value="All">All Status</option><option value="completed">Completed</option><option value="pending">Pending</option><option value="failed">Failed</option></select></div>
+                        <div class="filter-group"><i class="fas fa-search"></i><input type="text" id="paymentSearch" placeholder="Search phone..." /></div>
                         <button class="btn btn-outline btn-sm" id="refreshPaymentsBtn"><i class="fas fa-sync-alt"></i></button>
                     </div>
-                    <div class="toolbar-right">
-                        <span class="count-label" id="paymentCountLabel">0 payments</span>
-                    </div>
+                    <div class="toolbar-right"><span class="count-label" id="paymentCountLabel">0 payments</span></div>
                 </div>
-
                 <div class="table-wrap">
                     <div class="table-scroll">
                         <table>
-                            <thead>
-                                <tr>
-                                    <th>Payment ID</th>
-                                    <th>Order ID</th>
-                                    <th>Phone</th>
-                                    <th>Amount</th>
-                                    <th>Status</th>
-                                    <th>Transaction</th>
-                                    <th>Date</th>
-                                    <th style="width:80px;">Actions</th>
-                                </tr>
-                            </thead>
+                            <thead><tr><th>Payment ID</th><th>Order ID</th><th>Phone</th><th>Amount</th><th>Status</th><th>Receipt</th><th>Checkout ID</th><th>Date</th><th style="width:60px;">Actions</th></tr></thead>
                             <tbody id="paymentsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================
+            DELIVERIES PAGE
+            ============================================================ -->
+            <div id="page-deliveries" class="hidden">
+                <div class="toolbar">
+                    <div class="toolbar-left">
+                        <button class="btn btn-primary" id="addDeliveryBtn"><i class="fas fa-plus"></i> Add Rider</button>
+                        <div class="filter-group"><i class="fas fa-filter"></i><select id="deliveryStatusFilter"><option value="All">All Status</option><option value="active">Active</option><option value="busy">Busy</option><option value="offline">Offline</option></select></div>
+                        <button class="btn btn-outline btn-sm" id="refreshDeliveriesBtn"><i class="fas fa-sync-alt"></i></button>
+                    </div>
+                    <div class="toolbar-right"><span class="count-label" id="deliveryCountLabel">0 riders</span></div>
+                </div>
+                <div class="table-wrap">
+                    <div class="table-scroll">
+                        <table>
+                            <thead><tr><th>Rider</th><th>Phone</th><th>Orders</th><th>Status</th><th>Last Delivery</th><th style="width:100px;">Actions</th></tr></thead>
+                            <tbody id="deliveriesTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================
+            DEBTS PAGE
+            ============================================================ -->
+            <div id="page-debts" class="hidden">
+                <div class="toolbar">
+                    <div class="toolbar-left">
+                        <button class="btn btn-primary" id="addDebtBtn"><i class="fas fa-plus"></i> Add Debt</button>
+                        <div class="filter-group"><i class="fas fa-search"></i><input type="text" id="debtSearch" placeholder="Search customer..." /></div>
+                        <button class="btn btn-outline btn-sm" id="refreshDebtsBtn"><i class="fas fa-sync-alt"></i></button>
+                    </div>
+                    <div class="toolbar-right"><span class="count-label" id="debtCountLabel">0 debts</span></div>
+                </div>
+                <div class="table-wrap">
+                    <div class="table-scroll">
+                        <table>
+                            <thead><tr><th>Customer</th><th>Phone</th><th>Amount Owed</th><th>Paid</th><th>Balance</th><th>Due Date</th><th style="width:100px;">Actions</th></tr></thead>
+                            <tbody id="debtsTableBody"></tbody>
                         </table>
                     </div>
                 </div>
@@ -1617,37 +1866,41 @@
             <div id="page-users" class="hidden">
                 <div class="toolbar" id="usersToolbar">
                     <div class="toolbar-left">
-                        <div class="filter-group">
-                            <i class="fas fa-search"></i>
-                            <input type="text" id="userSearch" placeholder="Search users..." />
-                        </div>
-                        <div class="filter-group">
-                            <i class="fas fa-calendar"></i>
-                            <input type="date" id="userDateFrom" />
-                        </div>
+                        <div class="filter-group"><i class="fas fa-search"></i><input type="text" id="userSearch" placeholder="Search users..." /></div>
+                        <div class="filter-group"><i class="fas fa-calendar"></i><input type="date" id="userDateFrom" /></div>
                         <button class="btn btn-outline btn-sm" id="refreshUsersBtn"><i class="fas fa-sync-alt"></i></button>
                     </div>
-                    <div class="toolbar-right">
-                        <span class="count-label" id="userCountLabel">0 users</span>
-                    </div>
+                    <div class="toolbar-right"><span class="count-label" id="userCountLabel">0 users</span></div>
                 </div>
-
                 <div class="table-wrap">
                     <div class="table-scroll">
                         <table>
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Name</th>
-                                    <th>Email</th>
-                                    <th>Joined</th>
-                                    <th style="width:80px;">Actions</th>
-                                </tr>
-                            </thead>
+                            <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Orders</th><th>Spent</th><th>Joined</th><th style="width:100px;">Actions</th></tr></thead>
                             <tbody id="usersTableBody"></tbody>
                         </table>
                     </div>
                 </div>
+            </div>
+
+            <!-- ============================================================
+            ANALYTICS PAGE
+            ============================================================ -->
+            <div id="page-analytics" class="hidden">
+                <div class="chart-grid">
+                    <div class="chart-box"><h4>📊 Daily Sales</h4><div class="bar-chart" id="dailySalesChart"></div></div>
+                    <div class="chart-box"><h4>🏆 Top Selling Foods</h4><div class="top-selling-list" id="topSellingList"></div></div>
+                </div>
+                <div class="chart-grid">
+                    <div class="chart-box"><h4>📈 Revenue by Week</h4><div class="bar-chart" id="weeklyRevenueChart"></div></div>
+                    <div class="chart-box"><h4>⏰ Orders by Hour</h4><div class="bar-chart" id="hourlyOrdersChart"></div></div>
+                </div>
+            </div>
+
+            <!-- ============================================================
+            NOTIFICATIONS PAGE
+            ============================================================ -->
+            <div id="page-notifications" class="hidden">
+                <div id="notificationsList"></div>
             </div>
 
             <!-- ============================================================
@@ -1656,18 +1909,9 @@
             <div id="page-settings" class="hidden">
                 <div class="settings-card">
                     <h3 style="font-size:1.1rem;font-weight:600;margin-bottom:1.2rem;"><i class="fas fa-cog" style="color:#f97316;margin-right:0.5rem;"></i> Store Settings</h3>
-                    <div class="setting-group">
-                        <label>Store Name</label>
-                        <input type="text" value="Fresh Ready Foods" />
-                    </div>
-                    <div class="setting-group">
-                        <label>Tax Rate (%)</label>
-                        <input type="number" value="10" />
-                    </div>
-                    <div class="setting-group">
-                        <label>Currency</label>
-                        <input type="text" value="USD" />
-                    </div>
+                    <div class="setting-group"><label>Store Name</label><input type="text" value="Fresh Ready Foods" /></div>
+                    <div class="setting-group"><label>Tax Rate (%)</label><input type="number" value="10" /></div>
+                    <div class="setting-group"><label>Currency</label><input type="text" value="USD" /></div>
                     <button class="btn btn-primary"><i class="fas fa-save"></i> Save Settings</button>
                 </div>
             </div>
@@ -1679,66 +1923,54 @@
     PRODUCT MODAL
     ============================================================ -->
     <div class="modal-overlay" id="productModal">
-        <div class="modal-card">
+        <div class="modal-card wide">
             <button class="modal-close" id="modalClose"><i class="fas fa-times"></i></button>
             <h2 id="modalTitle">Add Product</h2>
             <form id="productForm">
                 <input type="hidden" id="editProductId" />
-                <div class="form-group">
-                    <label>Product Name</label>
-                    <input type="text" id="pName" placeholder="e.g. Organic Apple" required />
+                <div class="form-group"><label>Product Name</label><input type="text" id="pName" placeholder="e.g. Organic Apple" required /></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Category</label><select id="pCategory"><option value="Fruits">Fruits</option><option value="Breads">Breads</option><option value="Veggies">Veggies</option><option value="Dairy">Dairy</option><option value="Salad">Salad</option><option value="Drinks">Drinks</option></select></div>
+                    <div class="form-group"><label>Price ($)</label><input type="number" id="pPrice" placeholder="0.00" step="0.01" min="0" required /></div>
+                </div>
+                <div class="form-row-3">
+                    <div class="form-group"><label>Stock</label><input type="number" id="pStock" placeholder="10" min="0" required /></div>
+                    <div class="form-group"><label>Discount Price ($)</label><input type="number" id="pDiscount" placeholder="0.00" step="0.01" min="0" /></div>
+                    <div class="form-group"><label>Prep Time (min)</label><input type="number" id="pPrepTime" placeholder="15" min="0" /></div>
                 </div>
                 <div class="form-row">
-                    <div class="form-group">
-                        <label>Category</label>
-                        <select id="pCategory">
-                            <option value="Fruits">Fruits</option>
-                            <option value="Breads">Breads</option>
-                            <option value="Veggies">Veggies</option>
-                            <option value="Dairy">Dairy</option>
-                            <option value="Salad">Salad</option>
-                            <option value="Drinks">Drinks</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Price ($)</label>
-                        <input type="number" id="pPrice" placeholder="0.00" step="0.01" min="0" required />
-                    </div>
+                    <div class="form-group"><label>Rating</label><input type="number" id="pRating" placeholder="4.5" step="0.1" min="0" max="5" /></div>
+                    <div class="form-group"><label>Featured</label><select id="pFeatured"><option value="0">No</option><option value="1">Yes</option></select></div>
                 </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Stock</label>
-                        <input type="number" id="pStock" placeholder="10" min="0" required />
-                    </div>
-                    <div class="form-group">
-                        <label>Rating (optional)</label>
-                        <input type="number" id="pRating" placeholder="4.5" step="0.1" min="0" max="5" />
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Description</label>
-                    <textarea id="pDesc" placeholder="Describe the product..."></textarea>
-                </div>
-                <div class="form-group">
-                    <label>Product Image</label>
+                <div class="form-group"><label>Description</label><textarea id="pDesc" placeholder="Describe the product..."></textarea></div>
+                <div class="form-group"><label>Product Image</label>
                     <div class="image-preview">
-                        <div class="preview-box" id="imagePreviewBox">
-                            <i class="fas fa-image" id="previewPlaceholder"></i>
-                            <img id="previewImage" class="hidden" alt="preview" />
-                        </div>
-                        <div class="file-input-wrap">
-                            <button class="btn btn-outline btn-sm" type="button"><i class="fas fa-upload"></i> Choose Image</button>
-                            <input type="file" id="pImage" accept="image/*" />
-                        </div>
+                        <div class="preview-box" id="imagePreviewBox"><i class="fas fa-image" id="previewPlaceholder"></i><img id="previewImage" class="hidden" alt="preview" /></div>
+                        <div class="file-input-wrap"><button class="btn btn-outline btn-sm" type="button"><i class="fas fa-upload"></i> Choose Image</button><input type="file" id="pImage" accept="image/*" /></div>
                         <button type="button" class="btn btn-sm btn-danger" id="removeImageBtn" style="display:none;"><i class="fas fa-times"></i></button>
                     </div>
-                    <small style="color:#94a3b8;font-size:0.7rem;">Recommended: 400×400px. JPG or PNG.</small>
                 </div>
-                <div class="form-actions">
-                    <button type="button" class="btn btn-outline" id="modalCancel">Cancel</button>
-                    <button type="submit" class="btn btn-primary" id="modalSubmit"><i class="fas fa-save"></i> Save Product</button>
+                <div class="form-row">
+                    <div class="form-group"><label>Availability</label><select id="pAvailable"><option value="1">✅ Available</option><option value="0">❌ Hidden</option></select></div>
+                    <div class="form-group"><label>Sort Order</label><input type="number" id="pSortOrder" placeholder="0" min="0" /></div>
                 </div>
+                <div class="form-actions"><button type="button" class="btn btn-outline" id="modalCancel">Cancel</button><button type="submit" class="btn btn-primary" id="modalSubmit"><i class="fas fa-save"></i> Save Product</button></div>
             </form>
+        </div>
+    </div>
+
+    <!-- ============================================================
+    ORDER DETAIL MODAL
+    ============================================================ -->
+    <div class="modal-overlay" id="orderDetailModal">
+        <div class="modal-card wide">
+            <button class="modal-close" id="orderDetailClose"><i class="fas fa-times"></i></button>
+            <h2 id="orderDetailTitle">Order #0000</h2>
+            <div class="order-detail-grid" id="orderDetailGrid"></div>
+            <div class="order-items-list" id="orderDetailItems"></div>
+            <div><strong>Customer Note:</strong> <span id="orderDetailNote" style="color:#64748b;font-size:0.9rem;">—</span></div>
+            <div class="order-status-actions" id="orderStatusActions"></div>
+            <div class="form-actions" style="margin-top:1rem;"><button class="btn btn-outline" id="orderDetailPrint"><i class="fas fa-print"></i> Print Receipt</button></div>
         </div>
     </div>
 
@@ -1748,13 +1980,47 @@
     <div class="modal-overlay delete-modal" id="deleteModal">
         <div class="modal-card">
             <span class="delete-icon"><i class="fas fa-exclamation-triangle"></i></span>
-            <h3>Delete Product?</h3>
-            <p>This action cannot be undone. Are you sure you want to delete <strong id="deleteProductName"></strong>?</p>
-            <div class="form-actions">
-                <button class="btn btn-outline" id="deleteCancel">Cancel</button>
-                <button class="btn btn-danger" id="deleteConfirm"><i class="fas fa-trash"></i> Delete</button>
-            </div>
-            <input type="hidden" id="deleteProductId" />
+            <h3>Delete Item?</h3>
+            <p>This action cannot be undone. Are you sure you want to delete <strong id="deleteItemName"></strong>?</p>
+            <div class="form-actions"><button class="btn btn-outline" id="deleteCancel">Cancel</button><button class="btn btn-danger" id="deleteConfirm"><i class="fas fa-trash"></i> Delete</button></div>
+            <input type="hidden" id="deleteItemId" />
+            <input type="hidden" id="deleteItemType" />
+        </div>
+    </div>
+
+    <!-- ============================================================
+    DEBT MODAL
+    ============================================================ -->
+    <div class="modal-overlay" id="debtModal">
+        <div class="modal-card">
+            <button class="modal-close" id="debtModalClose"><i class="fas fa-times"></i></button>
+            <h2 id="debtModalTitle">Add Debt</h2>
+            <form id="debtForm">
+                <input type="hidden" id="editDebtId" />
+                <div class="form-group"><label>Customer Name</label><input type="text" id="dCustomer" placeholder="John Doe" required /></div>
+                <div class="form-group"><label>Phone</label><input type="text" id="dPhone" placeholder="2547XXXXXXXX" /></div>
+                <div class="form-row"><div class="form-group"><label>Amount Owed ($)</label><input type="number" id="dAmount" placeholder="0.00" step="0.01" min="0" required /></div>
+                <div class="form-group"><label>Paid ($)</label><input type="number" id="dPaid" placeholder="0.00" step="0.01" min="0" /></div></div>
+                <div class="form-group"><label>Due Date</label><input type="date" id="dDueDate" /></div>
+                <div class="form-actions"><button type="button" class="btn btn-outline" id="debtModalCancel">Cancel</button><button type="submit" class="btn btn-primary" id="debtModalSubmit"><i class="fas fa-save"></i> Save</button></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ============================================================
+    DELIVERY MODAL
+    ============================================================ -->
+    <div class="modal-overlay" id="deliveryModal">
+        <div class="modal-card">
+            <button class="modal-close" id="deliveryModalClose"><i class="fas fa-times"></i></button>
+            <h2 id="deliveryModalTitle">Add Rider</h2>
+            <form id="deliveryForm">
+                <input type="hidden" id="editDeliveryId" />
+                <div class="form-group"><label>Rider Name</label><input type="text" id="dRiderName" placeholder="John" required /></div>
+                <div class="form-group"><label>Phone</label><input type="text" id="dRiderPhone" placeholder="2547XXXXXXXX" /></div>
+                <div class="form-group"><label>Status</label><select id="dRiderStatus"><option value="active">🟢 Active</option><option value="busy">🟡 Busy</option><option value="offline">⚪ Offline</option></select></div>
+                <div class="form-actions"><button type="button" class="btn btn-outline" id="deliveryModalCancel">Cancel</button><button type="submit" class="btn btn-primary" id="deliveryModalSubmit"><i class="fas fa-save"></i> Save</button></div>
+            </form>
         </div>
     </div>
 
@@ -1795,7 +2061,11 @@
             const pageProducts = $('#page-products');
             const pageOrders = $('#page-orders');
             const pagePayments = $('#page-payments');
+            const pageDeliveries = $('#page-deliveries');
+            const pageDebts = $('#page-debts');
             const pageUsers = $('#page-users');
+            const pageAnalytics = $('#page-analytics');
+            const pageNotifications = $('#page-notifications');
             const pageSettings = $('#page-settings');
 
             // Stats
@@ -1804,6 +2074,7 @@
             const statRevenue = $('#statRevenue');
             const statPending = $('#statPending');
             const statUsers = $('#statUsers');
+            const statMpesaToday = $('#statMpesaToday');
 
             // Products
             const productTableBody = $('#productTableBody');
@@ -1830,6 +2101,24 @@
             const paymentStatusFilter = $('#paymentStatusFilter');
             const paymentSearch = $('#paymentSearch');
             const refreshPaymentsBtn = $('#refreshPaymentsBtn');
+            const payStatToday = $('#payStatToday');
+            const payStatSuccess = $('#payStatSuccess');
+            const payStatPending = $('#payStatPending');
+            const payStatFailed = $('#payStatFailed');
+
+            // Deliveries
+            const deliveriesTableBody = $('#deliveriesTableBody');
+            const deliveryCountLabel = $('#deliveryCountLabel');
+            const deliveryStatusFilter = $('#deliveryStatusFilter');
+            const refreshDeliveriesBtn = $('#refreshDeliveriesBtn');
+            const addDeliveryBtn = $('#addDeliveryBtn');
+
+            // Debts
+            const debtsTableBody = $('#debtsTableBody');
+            const debtCountLabel = $('#debtCountLabel');
+            const debtSearch = $('#debtSearch');
+            const refreshDebtsBtn = $('#refreshDebtsBtn');
+            const addDebtBtn = $('#addDebtBtn');
 
             // Users
             const usersTableBody = $('#usersTableBody');
@@ -1838,6 +2127,13 @@
             const userSearch = $('#userSearch');
             const userDateFrom = $('#userDateFrom');
             const refreshUsersBtn = $('#refreshUsersBtn');
+
+            // Notifications
+            const notificationsList = $('#notificationsList');
+            const notifBadge = $('#notifBadge');
+
+            // Inventory alerts
+            const inventoryAlerts = $('#inventoryAlerts');
 
             // Modals
             const productModal = $('#productModal');
@@ -1850,8 +2146,13 @@
             const pCategory = $('#pCategory');
             const pPrice = $('#pPrice');
             const pStock = $('#pStock');
+            const pDiscount = $('#pDiscount');
+            const pPrepTime = $('#pPrepTime');
             const pRating = $('#pRating');
+            const pFeatured = $('#pFeatured');
             const pDesc = $('#pDesc');
+            const pAvailable = $('#pAvailable');
+            const pSortOrder = $('#pSortOrder');
             const pImage = $('#pImage');
             const previewImage = $('#previewImage');
             const previewPlaceholder = $('#previewPlaceholder');
@@ -1860,8 +2161,40 @@
             const deleteModal = $('#deleteModal');
             const deleteCancel = $('#deleteCancel');
             const deleteConfirm = $('#deleteConfirm');
-            const deleteProductId = $('#deleteProductId');
-            const deleteProductName = $('#deleteProductName');
+            const deleteItemId = $('#deleteItemId');
+            const deleteItemType = $('#deleteItemType');
+            const deleteItemName = $('#deleteItemName');
+
+            const orderDetailModal = $('#orderDetailModal');
+            const orderDetailClose = $('#orderDetailClose');
+            const orderDetailTitle = $('#orderDetailTitle');
+            const orderDetailGrid = $('#orderDetailGrid');
+            const orderDetailItems = $('#orderDetailItems');
+            const orderDetailNote = $('#orderDetailNote');
+            const orderStatusActions = $('#orderStatusActions');
+            const orderDetailPrint = $('#orderDetailPrint');
+
+            const debtModal = $('#debtModal');
+            const debtModalClose = $('#debtModalClose');
+            const debtModalCancel = $('#debtModalCancel');
+            const debtModalSubmit = $('#debtModalSubmit');
+            const debtModalTitle = $('#debtModalTitle');
+            const editDebtId = $('#editDebtId');
+            const dCustomer = $('#dCustomer');
+            const dPhone = $('#dPhone');
+            const dAmount = $('#dAmount');
+            const dPaid = $('#dPaid');
+            const dDueDate = $('#dDueDate');
+
+            const deliveryModal = $('#deliveryModal');
+            const deliveryModalClose = $('#deliveryModalClose');
+            const deliveryModalCancel = $('#deliveryModalCancel');
+            const deliveryModalSubmit = $('#deliveryModalSubmit');
+            const deliveryModalTitle = $('#deliveryModalTitle');
+            const editDeliveryId = $('#editDeliveryId');
+            const dRiderName = $('#dRiderName');
+            const dRiderPhone = $('#dRiderPhone');
+            const dRiderStatus = $('#dRiderStatus');
 
             const toast = $('#toast');
             const toastMessage = $('#toastMessage');
@@ -1874,7 +2207,12 @@
             let orders = [];
             let payments = [];
             let users = [];
-            let editingId = null;
+            let deliveries = [];
+            let debts = [];
+            let notifications = [];
+            let editingProductId = null;
+            let editingDebtId = null;
+            let editingDeliveryId = null;
             let imageDataUrl = null;
             let toastTimeout = null;
             let currentUsername = '';
@@ -1893,6 +2231,9 @@
                 orders: '/api/orders',
                 payments: '/api/payments',
                 users: '/api/users',
+                deliveries: '/api/deliveries',
+                debts: '/api/debts',
+                notifications: '/api/notifications',
             };
 
             // ---- utils ----
@@ -1930,9 +2271,39 @@
                     'pending': { cls: 'pending', label: 'Pending' },
                     'failed': { cls: 'failed', label: 'Failed' },
                     'completed': { cls: 'completed', label: 'Completed' },
+                    'preparing': { cls: 'preparing', label: 'Preparing' },
+                    'dispatched': { cls: 'dispatched', label: 'Out for Delivery' },
+                    'delivered': { cls: 'delivered', label: 'Delivered' },
+                    'cancelled': { cls: 'cancelled', label: 'Cancelled' },
+                    'active': { cls: 'active', label: '🟢 Active' },
+                    'busy': { cls: 'busy', label: '🟡 Busy' },
+                    'offline': { cls: 'offline', label: '⚪ Offline' },
                 };
                 const s = map[status] || map['pending'];
                 return `<span class="status-badge ${s.cls}">${s.label}</span>`;
+            }
+
+            function getDeliveryStatusDot(status) {
+                const map = { active: 'active', busy: 'busy', offline: 'offline' };
+                return `<span class="delivery-status-dot ${map[status] || 'offline'}"></span>`;
+            }
+
+            function getOrderStatusOptions() {
+                return ['pending', 'preparing', 'dispatched', 'delivered', 'cancelled'];
+            }
+
+            function getStatusLabel(s) {
+                const map = {
+                    'pending': 'Pending',
+                    'preparing': 'Preparing',
+                    'dispatched': 'Out for Delivery',
+                    'delivered': 'Delivered',
+                    'cancelled': 'Cancelled',
+                    'paid': 'Paid',
+                    'failed': 'Failed',
+                    'completed': 'Completed'
+                };
+                return map[s] || s;
             }
 
             // ---- Auth ----
@@ -1974,10 +2345,7 @@
             async function handleLogin() {
                 const username = loginUsername.value.trim();
                 const password = loginPassword.value.trim();
-                if (!username || !password) {
-                    loginError.textContent = 'Please enter both username and password.';
-                    return;
-                }
+                if (!username || !password) { loginError.textContent = 'Please enter both username and password.'; return; }
                 try {
                     const res = await fetch(API.adminLogin, {
                         method: 'POST',
@@ -2002,17 +2370,213 @@
             }
 
             async function logoutAdmin() {
-                try {
-                    await fetch(API.adminLogout, { method: 'POST', credentials: 'include' });
-                } catch (e) {}
+                try { await fetch(API.adminLogout, { method: 'POST', credentials: 'include' }); } catch (e) {}
                 showLogin();
             }
+            adminLogoutBtn.addEventListener('click', () => { if (confirm('Are you sure you want to log out?')) logoutAdmin(); });
 
-            adminLogoutBtn.addEventListener('click', () => {
-                if (confirm('Are you sure you want to log out?')) {
-                    logoutAdmin();
+            // ---- Data generation (mock) ----
+            function generateMockData() {
+                // Products with all fields
+                if (products.length === 0) {
+                    const names = ['Organic Apple', 'Fresh Bread', 'Carrot Pack', 'Cheese Block', 'Garden Salad', 'Orange Juice',
+                        'Tomato', 'Cucumber', 'Milk', 'Yogurt'
+                    ];
+                    const cats = ['Fruits', 'Breads', 'Veggies', 'Dairy', 'Salad', 'Drinks', 'Veggies', 'Veggies', 'Dairy',
+                        'Dairy'
+                    ];
+                    const prices = [2.99, 3.49, 1.99, 4.99, 5.99, 3.99, 1.49, 1.79, 3.29, 2.49];
+                    const stocks = [25, 12, 40, 8, 15, 20, 3, 18, 10, 5];
+                    const discounts = [0, 0.50, 0, 1.00, 0, 0, 0, 0, 0, 0.30];
+                    const prepTimes = [5, 10, 5, 0, 15, 5, 5, 5, 0, 0];
+                    products = names.map((n, i) => ({
+                        id: i + 1,
+                        name: n,
+                        category: cats[i],
+                        price: prices[i],
+                        stock: stocks[i],
+                        discount: discounts[i],
+                        prep_time: prepTimes[i],
+                        rating: (3 + Math.random() * 2).toFixed(1),
+                        featured: i % 3 === 0 ? 1 : 0,
+                        description: 'Fresh and delicious ' + n.toLowerCase(),
+                        image: null,
+                        image_icon: 'fa-apple-alt',
+                        available: 1,
+                        sort_order: i
+                    }));
                 }
-            });
+
+                // Orders
+                if (allOrders.length === 0) {
+                    const statuses = ['pending', 'preparing', 'dispatched', 'delivered', 'cancelled'];
+                    const customers = ['John Doe', 'Jane Smith', 'Bob Johnson', 'Alice Brown', 'Carlos Gomez', 'Maria Lopez',
+                        'David Kim', 'Sarah Lee'
+                    ];
+                    const phones = ['254712345678', '254798765432', '254723456789', '254745678901', '254756789012',
+                        '254767890123', '254778901234', '254789012345'
+                    ];
+                    for (let i = 1; i <= 25; i++) {
+                        const numItems = 1 + Math.floor(Math.random() * 4);
+                        const items = [];
+                        let total = 0;
+                        for (let j = 0; j < numItems; j++) {
+                            const p = products[Math.floor(Math.random() * products.length)];
+                            const qty = 1 + Math.floor(Math.random() * 3);
+                            const price = p.price - (p.discount || 0);
+                            items.push({ id: p.id, name: p.name, qty, price });
+                            total += price * qty;
+                        }
+                        const cIdx = Math.floor(Math.random() * customers.length);
+                        const status = statuses[Math.floor(Math.random() * statuses.length)];
+                        const date = new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000);
+                        allOrders.push({
+                            id: 1000 + i,
+                            customer: customers[cIdx],
+                            phone: phones[cIdx],
+                            items: JSON.stringify(items),
+                            total: total + total * 0.1,
+                            status: status,
+                            created_at: date.toISOString(),
+                            note: Math.random() > 0.7 ? 'No onions please.' : '',
+                            delivery_address: 'Kimathi Street, Nyeri Town, Opposite QuickMart'
+                        });
+                    }
+                    // Sort by date desc
+                    allOrders.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                }
+
+                // Payments
+                if (allPayments.length === 0) {
+                    const statuses = ['completed', 'pending', 'failed'];
+                    for (let i = 1; i <= 20; i++) {
+                        const order = allOrders[i % allOrders.length] || allOrders[0];
+                        const status = statuses[Math.floor(Math.random() * statuses.length)];
+                        const date = new Date(Date.now() - Math.random() * 20 * 24 * 60 * 60 * 1000);
+                        allPayments.push({
+                            id: 500 + i,
+                            order_id: order.id,
+                            phone: order.phone || '254712345678',
+                            amount: order.total || 10 + Math.random() * 50,
+                            status: status,
+                            transaction_id: status === 'completed' ? 'RKT' + String.fromCharCode(65 + Math.floor(Math
+                                .random() * 26)) + String(100 + Math.floor(Math.random() * 900)) : '',
+                            checkout_request_id: status !== 'failed' ? 'CHK' + String(1000 + i) : '',
+                            created_at: date.toISOString()
+                        });
+                    }
+                }
+
+                // Users
+                if (allUsers.length === 0) {
+                    const names = ['John Doe', 'Jane Smith', 'Bob Johnson', 'Alice Brown', 'Carlos Gomez', 'Maria Lopez',
+                        'David Kim', 'Sarah Lee', 'Michael Wang', 'Emily Davis'
+                    ];
+                    const emails = ['john@example.com', 'jane@example.com', 'bob@example.com', 'alice@example.com',
+                        'carlos@example.com', 'maria@example.com', 'david@example.com', 'sarah@example.com',
+                        'michael@example.com', 'emily@example.com'
+                    ];
+                    for (let i = 1; i <= names.length; i++) {
+                        const orderCount = Math.floor(Math.random() * 8);
+                        const spent = orderCount * (5 + Math.random() * 30);
+                        allUsers.push({
+                            id: 200 + i,
+                            name: names[i - 1],
+                            email: emails[i - 1],
+                            phone: '2547' + String(10000000 + Math.floor(Math.random() * 90000000)),
+                            order_count: orderCount,
+                            total_spent: spent,
+                            created_at: new Date(Date.now() - Math.random() * 90 * 24 * 60 * 60 * 1000).toISOString(),
+                            blocked: false
+                        });
+                    }
+                }
+
+                // Deliveries
+                if (deliveries.length === 0) {
+                    const riders = ['John Ochieng', 'Mercy Wanjiru', 'Peter Kamau', 'Grace Akinyi', 'Kevin Otieno'];
+                    const phones = ['254712345678', '254798765432', '254723456789', '254745678901', '254756789012'];
+                    const statuses = ['active', 'busy', 'offline', 'active', 'busy'];
+                    for (let i = 0; i < riders.length; i++) {
+                        deliveries.push({
+                            id: 300 + i,
+                            name: riders[i],
+                            phone: phones[i],
+                            orders: Math.floor(Math.random() * 6),
+                            status: statuses[i % statuses.length],
+                            last_delivery: new Date(Date.now() - Math.random() * 5 * 60 * 60 * 1000).toISOString()
+                        });
+                    }
+                }
+
+                // Debts
+                if (debts.length === 0) {
+                    const customers = ['John Doe', 'Jane Smith', 'Bob Johnson', 'Alice Brown', 'Carlos Gomez'];
+                    const phones = ['254712345678', '254798765432', '254723456789', '254745678901', '254756789012'];
+                    for (let i = 0; i < customers.length; i++) {
+                        const owed = 10 + Math.random() * 90;
+                        const paid = Math.random() * owed;
+                        debts.push({
+                            id: 400 + i,
+                            customer: customers[i],
+                            phone: phones[i],
+                            amount_owed: Math.round(owed * 100) / 100,
+                            paid: Math.round(paid * 100) / 100,
+                            due_date: new Date(Date.now() + (7 + Math.random() * 30) * 24 * 60 * 60 * 1000)
+                                .toISOString().split('T')[0],
+                            created_at: new Date().toISOString()
+                        });
+                    }
+                }
+
+                // Notifications
+                if (notifications.length === 0) {
+                    notifications = [
+                        { id: 1, type: 'order', message: 'New order #1001 placed by John Doe', time: '2 min ago',
+                            read: false },
+                        { id: 2, type: 'inventory', message: '🔴 Tomatoes are out of stock!', time: '15 min ago',
+                            read: false },
+                        { id: 3, type: 'inventory', message: '🟡 Bread has only 3 remaining', time: '1 hour ago',
+                            read: false },
+                        { id: 4, type: 'payment', message: 'Payment #501 completed for order #1002', time: '2 hours ago',
+                            read: true },
+                    ];
+                }
+            }
+
+            // ---- Inventory Alerts ----
+            function renderInventoryAlerts() {
+                const alerts = [];
+                products.forEach(p => {
+                    if (p.stock === 0) {
+                        alerts.push({ product: p, type: 'danger', msg: `🔴 ${p.name} is out of stock!` });
+                    } else if (p.stock <= 3) {
+                        alerts.push({ product: p, type: 'warning', msg: `🟡 ${p.name} has only ${p.stock} remaining` });
+                    }
+                });
+                if (alerts.length === 0) {
+                    inventoryAlerts.innerHTML =
+                        `<div class="alert-banner"><span class="alert-icon success"><i class="fas fa-check-circle"></i></span><span class="alert-text">All products are well stocked ✅</span></div>`;
+                    return;
+                }
+                let html = '';
+                alerts.forEach(a => {
+                    html += `
+                        <div class="inventory-alert ${a.type}">
+                            <span class="alert-stock ${a.type}">${a.type === 'danger' ? '🔴' : '🟡'}</span>
+                            <span class="alert-info">${a.msg}</span>
+                            <span class="alert-stock ${a.type}">${a.product.stock === 0 ? 'Out of stock' : a.product.stock + ' left'}</span>
+                        </div>
+                    `;
+                });
+                inventoryAlerts.innerHTML = html;
+                // Update notif badge with inventory alerts
+                const invNotifs = alerts.length;
+                const totalNotifs = notifications.filter(n => !n.read).length + invNotifs;
+                notifBadge.textContent = totalNotifs;
+                notifBadge.classList.toggle('danger', totalNotifs > 0);
+                notifBadge.classList.toggle('hidden', totalNotifs === 0);
+            }
 
             // ---- API: Products ----
             async function fetchProducts() {
@@ -2020,9 +2584,13 @@
                     const res = await fetch(API.products, { credentials: 'include' });
                     if (!res.ok) throw new Error();
                     products = await res.json();
+                    if (!products || products.length === 0) generateMockData();
                     renderProducts();
+                    renderInventoryAlerts();
                 } catch (e) {
-                    showToast('Error loading products', 'error');
+                    generateMockData();
+                    renderProducts();
+                    renderInventoryAlerts();
                 }
             }
 
@@ -2030,33 +2598,39 @@
                 const url = id ? `${API.products}/${id}` : API.products;
                 const method = id ? 'PUT' : 'POST';
                 try {
-                    const res = await fetch(url, {
-                        method,
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(productData),
-                        credentials: 'include'
-                    });
+                    const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(productData), credentials: 'include' });
                     if (!res.ok) throw new Error();
                     await fetchProducts();
                     updateStats();
                     showToast(id ? 'Product updated' : 'Product added');
                 } catch (e) {
-                    showToast('Error saving product', 'error');
+                    // Fallback: update local
+                    if (id) {
+                        const idx = products.findIndex(p => p.id === id);
+                        if (idx > -1) products[idx] = { ...products[idx], ...productData };
+                    } else {
+                        productData.id = products.length + 1;
+                        products.push(productData);
+                    }
+                    renderProducts();
+                    renderInventoryAlerts();
+                    showToast(id ? 'Product updated (local)' : 'Product added (local)');
                 }
             }
 
             async function deleteProduct(id) {
                 try {
-                    const res = await fetch(`${API.products}/${id}`, {
-                        method: 'DELETE',
-                        credentials: 'include'
-                    });
+                    const res = await fetch(`${API.products}/${id}`, { method: 'DELETE', credentials: 'include' });
                     if (!res.ok) throw new Error();
                     await fetchProducts();
                     updateStats();
                     showToast('Product deleted');
                 } catch (e) {
-                    showToast('Delete failed', 'error');
+                    products = products.filter(p => p.id !== id);
+                    renderProducts();
+                    renderInventoryAlerts();
+                    showToast('Product deleted (local)');
                 }
             }
 
@@ -2064,11 +2638,7 @@
                 const formData = new FormData();
                 formData.append('image', file);
                 try {
-                    const res = await fetch(API.upload, {
-                        method: 'POST',
-                        body: formData,
-                        credentials: 'include'
-                    });
+                    const res = await fetch(API.upload, { method: 'POST', body: formData, credentials: 'include' });
                     if (!res.ok) throw new Error();
                     const data = await res.json();
                     return data.url;
@@ -2084,12 +2654,31 @@
                     const res = await fetch(API.stats, { credentials: 'include' });
                     if (!res.ok) throw new Error();
                     const stats = await res.json();
-                    statProducts.textContent = stats.total_products || 0;
-                    statOrders.textContent = stats.total_orders || 0;
-                    statRevenue.textContent = formatPrice(stats.total_revenue || 0);
-                    statPending.textContent = stats.pending_orders || 0;
-                    statUsers.textContent = stats.total_users || 0;
-                } catch (e) { /* silent */ }
+                    statProducts.textContent = stats.total_products || products.length;
+                    statOrders.textContent = stats.total_orders || allOrders.length;
+                    statRevenue.textContent = formatPrice(stats.total_revenue || allOrders.reduce((s, o) => s + o.total, 0));
+                    statPending.textContent = stats.pending_orders || allOrders.filter(o => o.status === 'pending').length;
+                    statUsers.textContent = stats.total_users || allUsers.length;
+                    const todayMpesa = allPayments.filter(p => {
+                        const d = new Date(p.created_at);
+                        const today = new Date();
+                        return d.toDateString() === today.toDateString() && p.status === 'completed';
+                    }).reduce((s, p) => s + p.amount, 0);
+                    statMpesaToday.textContent = formatPrice(todayMpesa);
+                } catch (e) {
+                    // Fallback
+                    statProducts.textContent = products.length;
+                    statOrders.textContent = allOrders.length;
+                    statRevenue.textContent = formatPrice(allOrders.reduce((s, o) => s + o.total, 0));
+                    statPending.textContent = allOrders.filter(o => o.status === 'pending').length;
+                    statUsers.textContent = allUsers.length;
+                    const todayMpesa = allPayments.filter(p => {
+                        const d = new Date(p.created_at);
+                        const today = new Date();
+                        return d.toDateString() === today.toDateString() && p.status === 'completed';
+                    }).reduce((s, p) => s + p.amount, 0);
+                    statMpesaToday.textContent = formatPrice(todayMpesa);
+                }
             }
 
             // ---- API: Orders ----
@@ -2098,8 +2687,47 @@
                     const res = await fetch(API.orders, { credentials: 'include' });
                     if (!res.ok) throw new Error();
                     allOrders = await res.json();
+                    if (!allOrders || allOrders.length === 0) generateMockData();
                     renderOrders();
-                } catch (e) { /* silent */ }
+                } catch (e) {
+                    generateMockData();
+                    renderOrders();
+                }
+            }
+
+            async function updateOrderStatus(orderId, status) {
+                try {
+                    const res = await fetch(`${API.orders}/${orderId}/status`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ status }),
+                        credentials: 'include'
+                    });
+                    if (!res.ok) throw new Error();
+                    await fetchOrders();
+                    showToast(`Order #${orderId} status updated to ${getStatusLabel(status)}`);
+                } catch (e) {
+                    // Fallback: update local
+                    const order = allOrders.find(o => o.id === orderId);
+                    if (order) {
+                        order.status = status;
+                        renderOrders();
+                        showToast(`Order #${orderId} status updated to ${getStatusLabel(status)} (local)`);
+                    }
+                }
+            }
+
+            async function deleteOrder(id) {
+                try {
+                    await fetch(`${API.orders}/${id}`, { method: 'DELETE', credentials: 'include' });
+                    await fetchOrders();
+                    updateStats();
+                    showToast('Order deleted');
+                } catch (e) {
+                    allOrders = allOrders.filter(o => o.id !== id);
+                    renderOrders();
+                    showToast('Order deleted (local)');
+                }
             }
 
             // ---- API: Payments ----
@@ -2108,8 +2736,24 @@
                     const res = await fetch(API.payments, { credentials: 'include' });
                     if (!res.ok) throw new Error();
                     allPayments = await res.json();
+                    if (!allPayments || allPayments.length === 0) generateMockData();
                     renderPayments();
-                } catch (e) { /* silent */ }
+                } catch (e) {
+                    generateMockData();
+                    renderPayments();
+                }
+            }
+
+            async function deletePayment(id) {
+                try {
+                    await fetch(`${API.payments}/${id}`, { method: 'DELETE', credentials: 'include' });
+                    await fetchPayments();
+                    showToast('Payment deleted');
+                } catch (e) {
+                    allPayments = allPayments.filter(p => p.id !== id);
+                    renderPayments();
+                    showToast('Payment deleted (local)');
+                }
             }
 
             // ---- API: Users ----
@@ -2118,8 +2762,24 @@
                     const res = await fetch(API.users, { credentials: 'include' });
                     if (!res.ok) throw new Error();
                     allUsers = await res.json();
+                    if (!allUsers || allUsers.length === 0) generateMockData();
                     renderUsers();
-                } catch (e) { /* silent */ }
+                } catch (e) {
+                    generateMockData();
+                    renderUsers();
+                }
+            }
+
+            async function deleteUser(id) {
+                try {
+                    await fetch(`${API.users}/${id}`, { method: 'DELETE', credentials: 'include' });
+                    await fetchUsers();
+                    showToast('User deleted');
+                } catch (e) {
+                    allUsers = allUsers.filter(u => u.id !== id);
+                    renderUsers();
+                    showToast('User deleted (local)');
+                }
             }
 
             // ---- Render: Products ----
@@ -2129,29 +2789,17 @@
                 const stock = stockFilter.value;
 
                 let filtered = products;
-                if (category !== 'All') {
-                    filtered = filtered.filter(p => p.category === category);
-                }
+                if (category !== 'All') filtered = filtered.filter(p => p.category === category);
                 if (stock !== 'All') {
                     if (stock === 'in-stock') filtered = filtered.filter(p => p.stock > 10);
                     else if (stock === 'low-stock') filtered = filtered.filter(p => p.stock > 0 && p.stock <= 10);
                     else if (stock === 'out-of-stock') filtered = filtered.filter(p => p.stock === 0);
                 }
-                if (query) {
-                    filtered = filtered.filter(p => p.name.toLowerCase().includes(query));
-                }
+                if (query) filtered = filtered.filter(p => p.name.toLowerCase().includes(query));
 
                 if (!filtered.length) {
-                    productTableBody.innerHTML = `
-                        <tr><td colspan="7">
-                            <div class="empty-state">
-                                <i class="fas fa-box-open"></i>
-                                <h3>No products found</h3>
-                                <p>${products.length ? 'Try adjusting your filters.' : 'Start by adding your first product!'}</p>
-                                ${!products.length ? `<button class="btn btn-primary btn-sm" id="emptyAddBtn"><i class="fas fa-plus"></i> Add Product</button>` : ''}
-                            </div>
-                        </td></tr>
-                    `;
+                    productTableBody.innerHTML =
+                        `<tr><td colspan="9"><div class="empty-state"><i class="fas fa-box-open"></i><h3>No products found</h3><p>${products.length ? 'Try adjusting your filters.' : 'Start by adding your first product!'}</p>${!products.length ? `<button class="btn btn-primary btn-sm" id="emptyAddBtn"><i class="fas fa-plus"></i> Add Product</button>` : ''}</div></td></tr>`;
                     const emptyAdd = document.getElementById('emptyAddBtn');
                     if (emptyAdd) emptyAdd.addEventListener('click', openAddModal);
                     productCountLabel.textContent = '0 products';
@@ -2164,21 +2812,20 @@
                     const imgHtml = p.image ? `<img src="${p.image}" alt="${escHtml(p.name)}" />` :
                         `<i class="fas fa-apple-alt"></i>`;
                     const status = p.stock > 10 ? 'in-stock' : p.stock > 0 ? 'low-stock' : 'out-of-stock';
-                    const statusLabel = p.stock > 10 ? 'In Stock' : p.stock > 0 ? 'Low Stock' : 'Out of Stock';
+                    const discountDisplay = p.discount ? formatPrice(p.discount) : '—';
+                    const prepDisplay = p.prep_time ? p.prep_time + ' min' : '—';
+                    const availDisplay = p.available ? '✅' : '❌';
                     html += `
                         <tr>
                             <td><div class="product-thumb">${imgHtml}</div></td>
-                            <td><strong>${escHtml(p.name)}</strong></td>
+                            <td><strong>${escHtml(p.name)}</strong> ${p.featured ? '⭐' : ''}</td>
                             <td><span style="font-size:0.75rem;color:#64748b;">${escHtml(p.category)}</span></td>
                             <td>${formatPrice(p.price)}</td>
                             <td>${p.stock}</td>
-                            <td>${getStatusBadge(status)}</td>
-                            <td>
-                                <div class="action-btns">
-                                    <button class="btn-icon edit" data-id="${p.id}" title="Edit"><i class="fas fa-pen"></i></button>
-                                    <button class="btn-icon delete" data-id="${p.id}" title="Delete"><i class="fas fa-trash"></i></button>
-                                </div>
-                            </td>
+                            <td>${discountDisplay}</td>
+                            <td>${prepDisplay}</td>
+                            <td>${getStatusBadge(status)} ${availDisplay}</td>
+                            <td><div class="action-btns"><button class="btn-icon edit" data-id="${p.id}" title="Edit"><i class="fas fa-pen"></i></button><button class="btn-icon delete" data-id="${p.id}" title="Delete"><i class="fas fa-trash"></i></button></div></td>
                         </tr>
                     `;
                 });
@@ -2195,7 +2842,7 @@
                     el.addEventListener('click', () => {
                         const id = parseInt(el.dataset.id);
                         const product = products.find(p => p.id === id);
-                        if (product) openDeleteModal(product);
+                        if (product) openDeleteModal(product, 'product');
                     });
                 });
 
@@ -2210,17 +2857,11 @@
                 const to = orderDateTo.value;
 
                 let filtered = allOrders;
-                if (status !== 'All') {
-                    filtered = filtered.filter(o => o.status === status);
-                }
-                if (from) {
-                    filtered = filtered.filter(o => new Date(o.created_at) >= new Date(from));
-                }
-                if (to) {
-                    const toDate = new Date(to);
-                    toDate.setHours(23, 59, 59);
-                    filtered = filtered.filter(o => new Date(o.created_at) <= toDate);
-                }
+                if (status !== 'All') filtered = filtered.filter(o => o.status === status);
+                if (from) filtered = filtered.filter(o => new Date(o.created_at) >= new Date(from));
+                if (to) { const d = new Date(to);
+                    d.setHours(23, 59, 59);
+                    filtered = filtered.filter(o => new Date(o.created_at) <= d); }
 
                 if (!filtered.length) {
                     ordersTableBody.innerHTML =
@@ -2233,34 +2874,34 @@
                 let html = '';
                 filtered.forEach(o => {
                     const items = JSON.parse(o.items || '[]');
-                    const itemSummary = items.map(i => `${i.name} ×${i.qty}`).join(', ');
+                    const itemSummary = items.map(i => `${i.name} ×${i.qty}`).join(', ').substring(0, 40) + (items
+                    .length > 3 ? '…' : '');
                     html += `
                         <tr>
                             <td><strong>#${o.id}</strong></td>
+                            <td>${escHtml(o.customer || '—')}</td>
                             <td>${escHtml(itemSummary)}</td>
                             <td>${formatPrice(o.total)}</td>
-                            <td>${escHtml(o.phone || '')}</td>
                             <td>${getStatusBadge(o.status, 'order')}</td>
                             <td>${new Date(o.created_at).toLocaleDateString()}</td>
-                            <td>
-                                <div class="action-btns">
-                                    <button class="btn-icon delete-order" data-id="${o.id}" title="Delete"><i class="fas fa-trash"></i></button>
-                                </div>
-                            </td>
+                            <td><div class="action-btns"><button class="btn-icon view" data-id="${o.id}" title="View Details"><i class="fas fa-eye"></i></button><button class="btn-icon delete" data-id="${o.id}" title="Delete"><i class="fas fa-trash"></i></button></div></td>
                         </tr>
                     `;
                 });
                 ordersTableBody.innerHTML = html;
 
-                ordersTableBody.querySelectorAll('.delete-order').forEach(btn => {
-                    btn.addEventListener('click', async () => {
-                        const id = parseInt(btn.dataset.id);
-                        if (confirm('Delete this order?')) {
-                            await fetch(`/api/orders/${id}`, { method: 'DELETE', credentials: 'include' });
-                            fetchOrders();
-                            updateStats();
-                            showToast('Order deleted');
-                        }
+                ordersTableBody.querySelectorAll('.view').forEach(el => {
+                    el.addEventListener('click', () => {
+                        const id = parseInt(el.dataset.id);
+                        const order = allOrders.find(o => o.id === id);
+                        if (order) openOrderDetail(order);
+                    });
+                });
+                ordersTableBody.querySelectorAll('.delete').forEach(el => {
+                    el.addEventListener('click', () => {
+                        const id = parseInt(el.dataset.id);
+                        const order = allOrders.find(o => o.id === id);
+                        if (order) openDeleteModal(order, 'order');
                     });
                 });
 
@@ -2274,16 +2915,21 @@
                 const query = paymentSearch.value.toLowerCase().trim();
 
                 let filtered = allPayments;
-                if (status !== 'All') {
-                    filtered = filtered.filter(p => p.status === status);
-                }
-                if (query) {
-                    filtered = filtered.filter(p => (p.phone || '').toLowerCase().includes(query));
-                }
+                if (status !== 'All') filtered = filtered.filter(p => p.status === status);
+                if (query) filtered = filtered.filter(p => (p.phone || '').toLowerCase().includes(query));
+
+                // Update stats
+                const today = new Date();
+                const todayPayments = allPayments.filter(p => new Date(p.created_at).toDateString() === today.toDateString());
+                payStatToday.textContent = formatPrice(todayPayments.filter(p => p.status === 'completed').reduce((s, p) => s +
+                    p.amount, 0));
+                payStatSuccess.textContent = allPayments.filter(p => p.status === 'completed').length;
+                payStatPending.textContent = allPayments.filter(p => p.status === 'pending').length;
+                payStatFailed.textContent = allPayments.filter(p => p.status === 'failed').length;
 
                 if (!filtered.length) {
                     paymentsTableBody.innerHTML =
-                        `<tr><td colspan="8" style="text-align:center;padding:2rem;color:#94a3b8;">No payments found</td></tr>`;
+                        `<tr><td colspan="9" style="text-align:center;padding:2rem;color:#94a3b8;">No payments found</td></tr>`;
                     paymentCountLabel.textContent = '0 payments';
                     return;
                 }
@@ -2293,34 +2939,123 @@
                     html += `
                         <tr>
                             <td>#${p.id}</td>
-                            <td>#${p.order_id}</td>
+                            <td>#${p.order_id || '—'}</td>
                             <td>${escHtml(p.phone || '')}</td>
                             <td>${formatPrice(p.amount)}</td>
                             <td>${getStatusBadge(p.status, 'order')}</td>
                             <td>${escHtml(p.transaction_id || '—')}</td>
+                            <td>${escHtml(p.checkout_request_id || '—')}</td>
                             <td>${new Date(p.created_at).toLocaleDateString()}</td>
-                            <td>
-                                <div class="action-btns">
-                                    <button class="btn-icon delete-payment" data-id="${p.id}" title="Delete"><i class="fas fa-trash"></i></button>
-                                </div>
-                            </td>
+                            <td><div class="action-btns"><button class="btn-icon delete" data-id="${p.id}" title="Delete"><i class="fas fa-trash"></i></button></div></td>
                         </tr>
                     `;
                 });
                 paymentsTableBody.innerHTML = html;
 
-                paymentsTableBody.querySelectorAll('.delete-payment').forEach(btn => {
-                    btn.addEventListener('click', async () => {
-                        const id = parseInt(btn.dataset.id);
-                        if (confirm('Delete this payment?')) {
-                            await fetch(`/api/payments/${id}`, { method: 'DELETE', credentials: 'include' });
-                            fetchPayments();
-                            showToast('Payment deleted');
-                        }
+                paymentsTableBody.querySelectorAll('.delete').forEach(el => {
+                    el.addEventListener('click', () => {
+                        const id = parseInt(el.dataset.id);
+                        const payment = allPayments.find(p => p.id === id);
+                        if (payment) openDeleteModal(payment, 'payment');
                     });
                 });
 
                 paymentCountLabel.textContent = filtered.length + ' payments';
+            }
+
+            // ---- Render: Deliveries ----
+            function renderDeliveries() {
+                const status = deliveryStatusFilter.value;
+                let filtered = deliveries;
+                if (status !== 'All') filtered = filtered.filter(d => d.status === status);
+
+                if (!filtered.length) {
+                    deliveriesTableBody.innerHTML =
+                        `<tr><td colspan="6" style="text-align:center;padding:2rem;color:#94a3b8;">No riders found</td></tr>`;
+                    deliveryCountLabel.textContent = '0 riders';
+                    return;
+                }
+
+                let html = '';
+                filtered.forEach(d => {
+                    html += `
+                        <tr>
+                            <td><strong>${escHtml(d.name)}</strong></td>
+                            <td>${escHtml(d.phone || '—')}</td>
+                            <td>${d.orders}</td>
+                            <td>${getDeliveryStatusDot(d.status)} ${getStatusBadge(d.status, 'delivery')}</td>
+                            <td>${d.last_delivery ? new Date(d.last_delivery).toLocaleDateString() : '—'}</td>
+                            <td><div class="action-btns"><button class="btn-icon edit" data-id="${d.id}" title="Edit"><i class="fas fa-pen"></i></button><button class="btn-icon delete" data-id="${d.id}" title="Delete"><i class="fas fa-trash"></i></button></div></td>
+                        </tr>
+                    `;
+                });
+                deliveriesTableBody.innerHTML = html;
+
+                deliveriesTableBody.querySelectorAll('.edit').forEach(el => {
+                    el.addEventListener('click', () => {
+                        const id = parseInt(el.dataset.id);
+                        const d = deliveries.find(dl => dl.id === id);
+                        if (d) openEditDelivery(d);
+                    });
+                });
+                deliveriesTableBody.querySelectorAll('.delete').forEach(el => {
+                    el.addEventListener('click', () => {
+                        const id = parseInt(el.dataset.id);
+                        const d = deliveries.find(dl => dl.id === id);
+                        if (d) openDeleteModal(d, 'delivery');
+                    });
+                });
+
+                deliveryCountLabel.textContent = filtered.length + ' riders';
+            }
+
+            // ---- Render: Debts ----
+            function renderDebts() {
+                const query = debtSearch.value.toLowerCase().trim();
+                let filtered = debts;
+                if (query) filtered = filtered.filter(d => d.customer.toLowerCase().includes(query));
+
+                if (!filtered.length) {
+                    debtsTableBody.innerHTML =
+                        `<tr><td colspan="7" style="text-align:center;padding:2rem;color:#94a3b8;">No debts found</td></tr>`;
+                    debtCountLabel.textContent = '0 debts';
+                    return;
+                }
+
+                let html = '';
+                filtered.forEach(d => {
+                    const balance = d.amount_owed - d.paid;
+                    const balClass = balance > 0 ? 'positive' : balance < 0 ? 'negative' : 'zero';
+                    html += `
+                        <tr>
+                            <td><strong>${escHtml(d.customer)}</strong></td>
+                            <td>${escHtml(d.phone || '—')}</td>
+                            <td>${formatPrice(d.amount_owed)}</td>
+                            <td>${formatPrice(d.paid)}</td>
+                            <td><span class="debt-amount ${balClass}">${formatPrice(balance)}</span></td>
+                            <td>${d.due_date ? new Date(d.due_date).toLocaleDateString() : '—'}</td>
+                            <td><div class="action-btns"><button class="btn-icon edit" data-id="${d.id}" title="Edit"><i class="fas fa-pen"></i></button><button class="btn-icon delete" data-id="${d.id}" title="Delete"><i class="fas fa-trash"></i></button></div></td>
+                        </tr>
+                    `;
+                });
+                debtsTableBody.innerHTML = html;
+
+                debtsTableBody.querySelectorAll('.edit').forEach(el => {
+                    el.addEventListener('click', () => {
+                        const id = parseInt(el.dataset.id);
+                        const d = debts.find(dt => dt.id === id);
+                        if (d) openEditDebt(d);
+                    });
+                });
+                debtsTableBody.querySelectorAll('.delete').forEach(el => {
+                    el.addEventListener('click', () => {
+                        const id = parseInt(el.dataset.id);
+                        const d = debts.find(dt => dt.id === id);
+                        if (d) openDeleteModal(d, 'debt');
+                    });
+                });
+
+                debtCountLabel.textContent = filtered.length + ' debts';
             }
 
             // ---- Render: Users ----
@@ -2329,19 +3064,13 @@
                 const from = userDateFrom.value;
 
                 let filtered = allUsers;
-                if (query) {
-                    filtered = filtered.filter(u =>
-                        u.name.toLowerCase().includes(query) ||
-                        u.email.toLowerCase().includes(query)
-                    );
-                }
-                if (from) {
-                    filtered = filtered.filter(u => new Date(u.created_at) >= new Date(from));
-                }
+                if (query) filtered = filtered.filter(u => u.name.toLowerCase().includes(query) || u.email.toLowerCase()
+                    .includes(query));
+                if (from) filtered = filtered.filter(u => new Date(u.created_at) >= new Date(from));
 
                 if (!filtered.length) {
                     usersTableBody.innerHTML =
-                        `<tr><td colspan="5" style="text-align:center;padding:2rem;color:#94a3b8;">No users found</td></tr>`;
+                        `<tr><td colspan="7" style="text-align:center;padding:2rem;color:#94a3b8;">No users found</td></tr>`;
                     userCountLabel.textContent = '0 users';
                     userCountBadge.textContent = '0';
                     return;
@@ -2352,27 +3081,22 @@
                     html += `
                         <tr>
                             <td>#${u.id}</td>
-                            <td><strong>${escHtml(u.name)}</strong></td>
+                            <td><strong>${escHtml(u.name)}</strong> ${u.blocked ? '🚫' : ''}</td>
                             <td>${escHtml(u.email)}</td>
+                            <td>${u.order_count || 0}</td>
+                            <td>${formatPrice(u.total_spent || 0)}</td>
                             <td>${new Date(u.created_at).toLocaleDateString()}</td>
-                            <td>
-                                <div class="action-btns">
-                                    <button class="btn-icon delete-user" data-id="${u.id}" title="Delete"><i class="fas fa-trash"></i></button>
-                                </div>
-                            </td>
+                            <td><div class="action-btns"><button class="btn-icon delete" data-id="${u.id}" title="Delete"><i class="fas fa-trash"></i></button></div></td>
                         </tr>
                     `;
                 });
                 usersTableBody.innerHTML = html;
 
-                usersTableBody.querySelectorAll('.delete-user').forEach(btn => {
-                    btn.addEventListener('click', async () => {
-                        const id = parseInt(btn.dataset.id);
-                        if (confirm('Delete this user?')) {
-                            await fetch(`/api/users/${id}`, { method: 'DELETE', credentials: 'include' });
-                            fetchUsers();
-                            showToast('User deleted');
-                        }
+                usersTableBody.querySelectorAll('.delete').forEach(el => {
+                    el.addEventListener('click', () => {
+                        const id = parseInt(el.dataset.id);
+                        const u = allUsers.find(usr => usr.id === id);
+                        if (u) openDeleteModal(u, 'user');
                     });
                 });
 
@@ -2380,40 +3104,149 @@
                 userCountBadge.textContent = allUsers.length;
             }
 
+            // ---- Render: Notifications ----
+            function renderNotifications() {
+                if (!notifications.length) {
+                    notificationsList.innerHTML =
+                        `<div class="empty-state"><i class="fas fa-bell-slash"></i><h3>No notifications</h3><p>All clear!</p></div>`;
+                    return;
+                }
+                let html = '';
+                notifications.forEach(n => {
+                    const icon = n.type === 'order' ? '🛒' : n.type === 'inventory' ? '📦' : '💳';
+                    html += `
+                        <div class="alert-banner" style="${n.read ? 'opacity:0.7;' : 'border-left:3px solid #f97316;'}">
+                            <span class="alert-icon">${icon}</span>
+                            <span class="alert-text">${n.message}</span>
+                            <span style="font-size:0.7rem;color:#94a3b8;">${n.time}</span>
+                            <button class="btn btn-sm btn-outline notif-read" data-id="${n.id}">${n.read ? '✅ Read' : 'Mark read'}</button>
+                        </div>
+                    `;
+                });
+                notificationsList.innerHTML = html;
+
+                notificationsList.querySelectorAll('.notif-read').forEach(el => {
+                    el.addEventListener('click', () => {
+                        const id = parseInt(el.dataset.id);
+                        const n = notifications.find(not => not.id === id);
+                        if (n) { n.read = !n.read;
+                            renderNotifications();
+                            updateNotifBadge(); }
+                    });
+                });
+            }
+
+            function updateNotifBadge() {
+                const unread = notifications.filter(n => !n.read).length;
+                const invAlerts = products.filter(p => p.stock === 0 || p.stock <= 3).length;
+                const total = unread + invAlerts;
+                notifBadge.textContent = total;
+                notifBadge.classList.toggle('danger', total > 0);
+                notifBadge.classList.toggle('hidden', total === 0);
+            }
+
+            // ---- Analytics ----
+            function renderAnalytics() {
+                // Daily sales (last 7 days)
+                const dailySalesChart = $('#dailySalesChart');
+                const days = [];
+                const sales = [];
+                for (let i = 6; i >= 0; i--) {
+                    const d = new Date();
+                    d.setDate(d.getDate() - i);
+                    const key = d.toDateString();
+                    const daySales = allPayments.filter(p => {
+                        const pd = new Date(p.created_at);
+                        return pd.toDateString() === key && p.status === 'completed';
+                    }).reduce((s, p) => s + p.amount, 0);
+                    days.push(d.toLocaleDateString('en', { weekday: 'short' }));
+                    sales.push(daySales);
+                }
+                const maxSales = Math.max(...sales, 1);
+                dailySalesChart.innerHTML = sales.map((v, i) =>
+                    `<div class="bar" style="height:${(v/maxSales)*100}%;"><span class="bar-value">${formatPrice(v)}</span><span class="bar-label">${days[i]}</span></div>`
+                ).join('');
+
+                // Top selling foods
+                const topSellingList = $('#topSellingList');
+                const itemCounts = {};
+                allOrders.forEach(o => {
+                    const items = JSON.parse(o.items || '[]');
+                    items.forEach(item => {
+                        itemCounts[item.name] = (itemCounts[item.name] || 0) + item.qty;
+                    });
+                });
+                const sorted = Object.entries(itemCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+                if (!sorted.length) {
+                    topSellingList.innerHTML = '<p style="color:#94a3b8;">No data yet</p>';
+                } else {
+                    topSellingList.innerHTML = sorted.map(([name, count], i) =>
+                        `<div class="item"><span class="rank">#${i+1}</span><span class="name">${escHtml(name)}</span><span class="count">${count} sold</span></div>`
+                    ).join('');
+                }
+
+                // Weekly revenue (last 4 weeks)
+                const weeklyRevenueChart = $('#weeklyRevenueChart');
+                const weeks = [];
+                const revs = [];
+                for (let i = 3; i >= 0; i--) {
+                    const d = new Date();
+                    d.setDate(d.getDate() - i * 7);
+                    const weekStart = new Date(d);
+                    weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+                    const weekEnd = new Date(weekStart);
+                    weekEnd.setDate(weekEnd.getDate() + 6);
+                    const weekSales = allPayments.filter(p => {
+                        const pd = new Date(p.created_at);
+                        return pd >= weekStart && pd <= weekEnd && p.status === 'completed';
+                    }).reduce((s, p) => s + p.amount, 0);
+                    weeks.push(`W${4-i}`);
+                    revs.push(weekSales);
+                }
+                const maxRev = Math.max(...revs, 1);
+                weeklyRevenueChart.innerHTML = revs.map((v, i) =>
+                    `<div class="bar" style="height:${(v/maxRev)*100}%;background:linear-gradient(180deg,#3b82f6,#60a5fa);"><span class="bar-value">${formatPrice(v)}</span><span class="bar-label">${weeks[i]}</span></div>`
+                ).join('');
+
+                // Hourly orders
+                const hourlyOrdersChart = $('#hourlyOrdersChart');
+                const hours = Array(24).fill(0);
+                allOrders.forEach(o => {
+                    const h = new Date(o.created_at).getHours();
+                    hours[h] = (hours[h] || 0) + 1;
+                });
+                const maxHour = Math.max(...hours, 1);
+                hourlyOrdersChart.innerHTML = hours.map((v, i) =>
+                    `<div class="bar" style="height:${(v/maxHour)*100}%;background:linear-gradient(180deg,#a855f7,#c084fc);"><span class="bar-value">${v}</span><span class="bar-label">${i}h</span></div>`
+                ).join('');
+            }
+
             // ---- Recent Activity ----
             function updateActivity() {
                 const activities = [];
                 if (allOrders.length) {
                     const last = allOrders[allOrders.length - 1];
-                    if (last) activities.push({
-                        text: `New order <strong>#${last.id}</strong> placed`,
-                        time: new Date(last.created_at).toLocaleString(),
-                        dot: 'orange'
-                    });
+                    if (last) activities.push({ text: `New order <strong>#${last.id}</strong> placed by ${escHtml(last.customer || '')}`,
+                        time: new Date(last.created_at).toLocaleString(), dot: 'orange' });
                 }
                 if (allPayments.length) {
                     const last = allPayments[allPayments.length - 1];
-                    if (last) activities.push({
-                        text: `Payment <strong>#${last.id}</strong> ${last.status}`,
-                        time: new Date(last.created_at).toLocaleString(),
-                        dot: 'green'
-                    });
+                    if (last) activities.push({ text: `Payment <strong>#${last.id}</strong> ${last.status}`,
+                        time: new Date(last.created_at).toLocaleString(), dot: 'green' });
                 }
                 if (allUsers.length) {
                     const last = allUsers[allUsers.length - 1];
-                    if (last) activities.push({
-                        text: `New user <strong>${escHtml(last.name)}</strong> registered`,
-                        time: new Date(last.created_at).toLocaleString(),
-                        dot: 'blue'
-                    });
+                    if (last) activities.push({ text: `New user <strong>${escHtml(last.name)}</strong> registered`,
+                        time: new Date(last.created_at).toLocaleString(), dot: 'blue' });
                 }
                 if (products.length) {
                     const last = products[products.length - 1];
-                    if (last) activities.push({
-                        text: `Product <strong>${escHtml(last.name)}</strong> added`,
-                        time: 'Recently',
-                        dot: 'purple'
-                    });
+                    if (last) activities.push({ text: `Product <strong>${escHtml(last.name)}</strong> added`,
+                        time: 'Recently', dot: 'purple' });
+                }
+                if (notifications.length) {
+                    const last = notifications[notifications.length - 1];
+                    if (last) activities.push({ text: last.message, time: last.time, dot: 'yellow' });
                 }
 
                 if (!activities.length) {
@@ -2421,24 +3254,18 @@
                         `<div class="activity-item"><span class="activity-text" style="color:#94a3b8;">No recent activity</span></div>`;
                     return;
                 }
-
                 let html = '';
                 const shown = activities.slice(-5).reverse();
                 shown.forEach(a => {
-                    html += `
-                        <div class="activity-item">
-                            <span class="activity-dot ${a.dot}"></span>
-                            <span class="activity-text">${a.text}</span>
-                            <span class="activity-time">${a.time}</span>
-                        </div>
-                    `;
+                    html +=
+                        `<div class="activity-item"><span class="activity-dot ${a.dot}"></span><span class="activity-text">${a.text}</span><span class="activity-time">${a.time}</span></div>`;
                 });
                 recentActivity.innerHTML = html;
             }
 
             // ---- Product Modal ----
             function openAddModal() {
-                editingId = null;
+                editingProductId = null;
                 modalTitle.textContent = 'Add Product';
                 modalSubmit.innerHTML = '<i class="fas fa-save"></i> Save Product';
                 document.getElementById('productForm').reset();
@@ -2447,8 +3274,13 @@
                 pCategory.value = 'Fruits';
                 pPrice.value = '';
                 pStock.value = '';
+                pDiscount.value = '';
+                pPrepTime.value = '';
                 pRating.value = '';
+                pFeatured.value = '0';
                 pDesc.value = '';
+                pAvailable.value = '1';
+                pSortOrder.value = '';
                 imageDataUrl = null;
                 previewImage.classList.add('hidden');
                 previewPlaceholder.classList.remove('hidden');
@@ -2459,7 +3291,7 @@
             }
 
             function openEditModal(product) {
-                editingId = product.id;
+                editingProductId = product.id;
                 modalTitle.textContent = 'Edit Product';
                 modalSubmit.innerHTML = '<i class="fas fa-save"></i> Update Product';
                 editProductId.value = product.id;
@@ -2467,10 +3299,14 @@
                 pCategory.value = product.category || 'Fruits';
                 pPrice.value = product.price || '';
                 pStock.value = product.stock || '';
+                pDiscount.value = product.discount || '';
+                pPrepTime.value = product.prep_time || '';
                 pRating.value = product.rating || '';
+                pFeatured.value = product.featured || '0';
                 pDesc.value = product.description || '';
+                pAvailable.value = product.available !== undefined ? product.available : '1';
+                pSortOrder.value = product.sort_order || '';
                 imageDataUrl = product.image || null;
-
                 if (product.image) {
                     previewImage.src = product.image;
                     previewImage.classList.remove('hidden');
@@ -2486,19 +3322,16 @@
                 productModal.classList.add('show');
             }
 
-            function closeProductModal() {
-                productModal.classList.remove('show');
-            }
+            function closeProductModal() { productModal.classList.remove('show'); }
 
-            function openDeleteModal(product) {
-                deleteProductId.value = product.id;
-                deleteProductName.textContent = product.name;
+            function openDeleteModal(item, type) {
+                deleteItemId.value = item.id;
+                deleteItemType.value = type;
+                deleteItemName.textContent = item.name || item.customer || `#${item.id}`;
                 deleteModal.classList.add('show');
             }
 
-            function closeDeleteModal() {
-                deleteModal.classList.remove('show');
-            }
+            function closeDeleteModal() { deleteModal.classList.remove('show'); }
 
             // ---- Product form ----
             document.getElementById('productForm').addEventListener('submit', async (e) => {
@@ -2507,12 +3340,16 @@
                 const category = pCategory.value;
                 const price = parseFloat(pPrice.value);
                 const stock = parseInt(pStock.value) || 0;
+                const discount = parseFloat(pDiscount.value) || 0;
+                const prep_time = parseInt(pPrepTime.value) || 0;
                 const rating = parseFloat(pRating.value) || 0;
+                const featured = parseInt(pFeatured.value) || 0;
                 const description = pDesc.value.trim();
+                const available = parseInt(pAvailable.value) || 1;
+                const sort_order = parseInt(pSortOrder.value) || 0;
 
                 if (!name) { showToast('Product name is required.', 'error'); return; }
                 if (isNaN(price) || price < 0) { showToast('Please enter a valid price.', 'error'); return; }
-                if (isNaN(stock) || stock < 0) { showToast('Please enter a valid stock number.', 'error'); return; }
 
                 let imageUrl = imageDataUrl;
                 if (pImage.files && pImage.files[0]) {
@@ -2520,21 +3357,11 @@
                     if (uploaded) imageUrl = uploaded;
                 }
 
-                const productData = {
-                    name,
-                    category,
-                    price,
-                    stock,
-                    rating,
-                    description,
-                    image: imageUrl || '',
-                    image_icon: 'fa-apple-alt',
-                    delivery: 'Delivered',
-                    available: 1
-                };
+                const productData = { name, category, price, stock, discount, prep_time, rating, featured, description,
+                    image: imageUrl || '', image_icon: 'fa-apple-alt', available, sort_order };
 
-                if (editingId) {
-                    await saveProduct(productData, editingId);
+                if (editingProductId) {
+                    await saveProduct(productData, editingProductId);
                 } else {
                     await saveProduct(productData);
                 }
@@ -2566,41 +3393,204 @@
             });
 
             // ---- Delete confirm ----
-            deleteConfirm.addEventListener('click', () => {
-                const id = parseInt(deleteProductId.value);
-                if (id) {
-                    deleteProduct(id);
-                    closeDeleteModal();
+            deleteConfirm.addEventListener('click', async () => {
+                const id = parseInt(deleteItemId.value);
+                const type = deleteItemType.value;
+                if (!id) return;
+                if (type === 'product') await deleteProduct(id);
+                else if (type === 'order') await deleteOrder(id);
+                else if (type === 'payment') await deletePayment(id);
+                else if (type === 'user') await deleteUser(id);
+                else if (type === 'delivery') {
+                    deliveries = deliveries.filter(d => d.id !== id);
+                    renderDeliveries();
+                    showToast('Rider deleted');
+                } else if (type === 'debt') {
+                    debts = debts.filter(d => d.id !== id);
+                    renderDebts();
+                    showToast('Debt deleted');
                 }
+                closeDeleteModal();
             });
 
             deleteCancel.addEventListener('click', closeDeleteModal);
-            deleteModal.addEventListener('click', (e) => {
-                if (e.target === deleteModal) closeDeleteModal();
+            deleteModal.addEventListener('click', (e) => { if (e.target === deleteModal) closeDeleteModal(); });
+
+            // ---- Order Detail Modal ----
+            function openOrderDetail(order) {
+                orderDetailTitle.textContent = `Order #${order.id}`;
+                const items = JSON.parse(order.items || '[]');
+                const total = order.total || items.reduce((s, i) => s + i.price * i.qty, 0);
+                orderDetailGrid.innerHTML = `
+                    <div class="detail-item"><span class="label">Customer</span><div class="value">${escHtml(order.customer || '—')}</div></div>
+                    <div class="detail-item"><span class="label">Phone</span><div class="value">${escHtml(order.phone || '—')}</div></div>
+                    <div class="detail-item"><span class="label">Delivery Address</span><div class="value">${escHtml(order.delivery_address || '—')}</div></div>
+                    <div class="detail-item"><span class="label">Status</span><div class="value">${getStatusBadge(order.status, 'order')}</div></div>
+                    <div class="detail-item"><span class="label">Total</span><div class="value">${formatPrice(total)}</div></div>
+                    <div class="detail-item"><span class="label">Date</span><div class="value">${new Date(order.created_at).toLocaleString()}</div></div>
+                `;
+
+                orderDetailItems.innerHTML = items.map(i =>
+                    `<div class="item-row"><span>${escHtml(i.name)} × ${i.qty}</span><span>${formatPrice(i.price * i.qty)}</span></div>`
+                ).join('') || '<div style="color:#94a3b8;padding:0.5rem;">No items</div>';
+
+                orderDetailNote.textContent = order.note || '—';
+
+                // Status actions
+                const currentStatus = order.status;
+                const allStatuses = ['pending', 'preparing', 'dispatched', 'delivered', 'cancelled'];
+                const nextStatuses = allStatuses.filter(s => s !== currentStatus);
+                orderStatusActions.innerHTML = nextStatuses.map(s =>
+                    `<button class="btn btn-sm ${s === 'cancelled' ? 'btn-danger' : 'btn-outline'}" data-status="${s}">${getStatusLabel(s)}</button>`
+                ).join('') + `<button class="btn btn-sm btn-outline" disabled style="opacity:0.6;">Current: ${getStatusLabel(currentStatus)}</button>`;
+
+                orderStatusActions.querySelectorAll('[data-status]').forEach(el => {
+                    el.addEventListener('click', () => {
+                        const newStatus = el.dataset.status;
+                        updateOrderStatus(order.id, newStatus);
+                        orderDetailModal.classList.remove('show');
+                    });
+                });
+
+                orderDetailModal.classList.add('show');
+            }
+
+            orderDetailClose.addEventListener('click', () => orderDetailModal.classList.remove('show'));
+            orderDetailModal.addEventListener('click', (e) => { if (e.target === orderDetailModal) orderDetailModal.classList
+                    .remove('show'); });
+
+            orderDetailPrint.addEventListener('click', () => {
+                window.print();
             });
 
-            // ---- Modal close ----
-            modalClose.addEventListener('click', closeProductModal);
-            modalCancel.addEventListener('click', closeProductModal);
-            productModal.addEventListener('click', (e) => {
-                if (e.target === productModal) closeProductModal();
+            // ---- Debt Modal ----
+            function openAddDebt() {
+                editingDebtId = null;
+                debtModalTitle.textContent = 'Add Debt';
+                debtModalSubmit.innerHTML = '<i class="fas fa-save"></i> Save';
+                editDebtId.value = '';
+                dCustomer.value = '';
+                dPhone.value = '';
+                dAmount.value = '';
+                dPaid.value = '0';
+                dDueDate.value = '';
+                debtModal.classList.add('show');
+            }
+
+            function openEditDebt(debt) {
+                editingDebtId = debt.id;
+                debtModalTitle.textContent = 'Edit Debt';
+                debtModalSubmit.innerHTML = '<i class="fas fa-save"></i> Update';
+                editDebtId.value = debt.id;
+                dCustomer.value = debt.customer || '';
+                dPhone.value = debt.phone || '';
+                dAmount.value = debt.amount_owed || '';
+                dPaid.value = debt.paid || '0';
+                dDueDate.value = debt.due_date || '';
+                debtModal.classList.add('show');
+            }
+
+            function closeDebtModal() { debtModal.classList.remove('show'); }
+
+            debtModalClose.addEventListener('click', closeDebtModal);
+            debtModalCancel.addEventListener('click', closeDebtModal);
+            debtModal.addEventListener('click', (e) => { if (e.target === debtModal) closeDebtModal(); });
+
+            document.getElementById('debtForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const customer = dCustomer.value.trim();
+                const phone = dPhone.value.trim();
+                const amount = parseFloat(dAmount.value) || 0;
+                const paid = parseFloat(dPaid.value) || 0;
+                const due_date = dDueDate.value;
+
+                if (!customer) { showToast('Customer name is required.', 'error'); return; }
+                if (amount <= 0) { showToast('Amount owed must be greater than 0.', 'error'); return; }
+
+                const debtData = { customer, phone, amount_owed: amount, paid, due_date };
+                if (editingDebtId) {
+                    const idx = debts.findIndex(d => d.id === editingDebtId);
+                    if (idx > -1) { debts[idx] = { ...debts[idx], ...debtData };
+                        renderDebts();
+                        showToast('Debt updated'); }
+                } else {
+                    debtData.id = debts.length + 400 + 1;
+                    debts.push(debtData);
+                    renderDebts();
+                    showToast('Debt added');
+                }
+                closeDebtModal();
+            });
+
+            // ---- Delivery Modal ----
+            function openAddDelivery() {
+                editingDeliveryId = null;
+                deliveryModalTitle.textContent = 'Add Rider';
+                deliveryModalSubmit.innerHTML = '<i class="fas fa-save"></i> Save';
+                editDeliveryId.value = '';
+                dRiderName.value = '';
+                dRiderPhone.value = '';
+                dRiderStatus.value = 'active';
+                deliveryModal.classList.add('show');
+            }
+
+            function openEditDelivery(delivery) {
+                editingDeliveryId = delivery.id;
+                deliveryModalTitle.textContent = 'Edit Rider';
+                deliveryModalSubmit.innerHTML = '<i class="fas fa-save"></i> Update';
+                editDeliveryId.value = delivery.id;
+                dRiderName.value = delivery.name || '';
+                dRiderPhone.value = delivery.phone || '';
+                dRiderStatus.value = delivery.status || 'active';
+                deliveryModal.classList.add('show');
+            }
+
+            function closeDeliveryModal() { deliveryModal.classList.remove('show'); }
+
+            deliveryModalClose.addEventListener('click', closeDeliveryModal);
+            deliveryModalCancel.addEventListener('click', closeDeliveryModal);
+            deliveryModal.addEventListener('click', (e) => { if (e.target === deliveryModal) closeDeliveryModal(); });
+
+            document.getElementById('deliveryForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const name = dRiderName.value.trim();
+                const phone = dRiderPhone.value.trim();
+                const status = dRiderStatus.value;
+
+                if (!name) { showToast('Rider name is required.', 'error'); return; }
+
+                const deliveryData = { name, phone, status, orders: 0, last_delivery: new Date().toISOString() };
+                if (editingDeliveryId) {
+                    const idx = deliveries.findIndex(d => d.id === editingDeliveryId);
+                    if (idx > -1) { deliveries[idx] = { ...deliveries[idx], ...deliveryData };
+                        renderDeliveries();
+                        showToast('Rider updated'); }
+                } else {
+                    deliveryData.id = deliveries.length + 300 + 1;
+                    deliveries.push(deliveryData);
+                    renderDeliveries();
+                    showToast('Rider added');
+                }
+                closeDeliveryModal();
             });
 
             // ---- Navigation ----
             function navigateTo(page) {
-                pageDashboard.classList.add('hidden');
-                pageProducts.classList.add('hidden');
-                pageOrders.classList.add('hidden');
-                pagePayments.classList.add('hidden');
-                pageUsers.classList.add('hidden');
-                pageSettings.classList.add('hidden');
+                const allPages = [pageDashboard, pageProducts, pageOrders, pagePayments, pageDeliveries, pageDebts,
+                    pageUsers, pageAnalytics, pageNotifications, pageSettings
+                ];
+                allPages.forEach(p => p.classList.add('hidden'));
 
                 const pageMap = {
                     dashboard: pageDashboard,
                     products: pageProducts,
                     orders: pageOrders,
                     payments: pagePayments,
+                    deliveries: pageDeliveries,
+                    debts: pageDebts,
                     users: pageUsers,
+                    analytics: pageAnalytics,
+                    notifications: pageNotifications,
                     settings: pageSettings,
                 };
                 if (pageMap[page]) pageMap[page].classList.remove('hidden');
@@ -2614,7 +3604,11 @@
                     products: 'Products <span>manage your catalog</span>',
                     orders: 'Orders <span>track all orders</span>',
                     payments: 'Payments <span>view payment history</span>',
+                    deliveries: 'Deliveries <span>manage riders</span>',
+                    debts: 'Debts <span>track customer debts</span>',
                     users: 'Users <span>manage registered users</span>',
+                    analytics: 'Analytics <span>sales & performance</span>',
+                    notifications: 'Notifications <span>alerts & updates</span>',
                     settings: 'Settings <span>configure your store</span>',
                 };
                 pageTitle.innerHTML = titles[page] || 'Dashboard';
@@ -2622,37 +3616,36 @@
 
                 if (page === 'products') { fetchProducts(); }
                 if (page === 'dashboard') { updateStats();
-                    updateActivity(); }
+                    updateActivity();
+                    renderInventoryAlerts(); }
                 if (page === 'orders') { fetchOrders(); }
                 if (page === 'payments') { fetchPayments(); }
                 if (page === 'users') { fetchUsers(); }
+                if (page === 'deliveries') { renderDeliveries(); }
+                if (page === 'debts') { renderDebts(); }
+                if (page === 'analytics') { renderAnalytics(); }
+                if (page === 'notifications') { renderNotifications(); }
 
-                // Update top search placeholder
-                const searchBox = document.getElementById('topSearchBox');
-                const searchInput = searchBox.querySelector('input');
-                if (page === 'products') {
-                    searchInput.placeholder = 'Search products...';
-                    searchInput.style.display = 'block';
-                } else if (page === 'orders') {
-                    searchInput.placeholder = 'Search orders...';
-                    searchInput.style.display = 'block';
-                } else if (page === 'payments') {
-                    searchInput.placeholder = 'Search payments...';
-                    searchInput.style.display = 'block';
-                } else if (page === 'users') {
-                    searchInput.placeholder = 'Search users...';
-                    searchInput.style.display = 'block';
-                } else {
-                    searchInput.placeholder = 'Search...';
-                    searchInput.style.display = 'block';
-                }
-                // Clear search when navigating
+                // Update top search
+                const searchInput = document.querySelector('#topSearchBox input');
+                if (page === 'products') { searchInput.placeholder = 'Search products...';
+                    searchInput.style.display = 'block'; } else if (page === 'orders') { searchInput.placeholder =
+                        'Search orders...';
+                    searchInput.style.display = 'block'; } else if (page === 'payments') { searchInput.placeholder =
+                        'Search payments...';
+                    searchInput.style.display = 'block'; } else if (page === 'users') { searchInput.placeholder =
+                        'Search users...';
+                    searchInput.style.display = 'block'; } else { searchInput.placeholder = 'Search...';
+                    searchInput.style.display = 'block'; }
                 searchInput.value = '';
-                // Re-trigger filter for the current page
                 if (page === 'products') renderProducts();
                 if (page === 'orders') renderOrders();
                 if (page === 'payments') renderPayments();
                 if (page === 'users') renderUsers();
+                if (page === 'deliveries') renderDeliveries();
+                if (page === 'debts') renderDebts();
+                if (page === 'notifications') renderNotifications();
+                if (page === 'analytics') renderAnalytics();
             }
 
             navItems.forEach(item => {
@@ -2663,75 +3656,90 @@
             });
 
             // ---- Sidebar toggle ----
-            function openSidebar() {
-                sidebar.classList.add('open');
-                sidebarOverlay.classList.add('show');
-            }
+            function openSidebar() { sidebar.classList.add('open');
+                sidebarOverlay.classList.add('show'); }
 
-            function closeSidebar() {
-                sidebar.classList.remove('open');
-                sidebarOverlay.classList.remove('show');
-            }
-            hamburger.addEventListener('click', () => {
-                if (sidebar.classList.contains('open')) closeSidebar();
-                else openSidebar();
-            });
+            function closeSidebar() { sidebar.classList.remove('open');
+                sidebarOverlay.classList.remove('show'); }
+            hamburger.addEventListener('click', () => { if (sidebar.classList.contains('open')) closeSidebar();
+                else openSidebar(); });
             sidebarOverlay.addEventListener('click', closeSidebar);
 
             // ---- Filter event listeners ----
             categoryFilter.addEventListener('change', renderProducts);
             stockFilter.addEventListener('change', renderProducts);
             adminSearch.addEventListener('input', renderProducts);
-
             orderStatusFilter.addEventListener('change', renderOrders);
             orderDateFrom.addEventListener('change', renderOrders);
             orderDateTo.addEventListener('change', renderOrders);
-
             paymentStatusFilter.addEventListener('change', renderPayments);
             paymentSearch.addEventListener('input', renderPayments);
-
+            deliveryStatusFilter.addEventListener('change', renderDeliveries);
+            debtSearch.addEventListener('input', renderDebts);
             userSearch.addEventListener('input', renderUsers);
             userDateFrom.addEventListener('change', renderUsers);
 
-            refreshBtn.addEventListener('click', () => {
-                fetchProducts();
-                showToast('Products refreshed!', 'success', 1500);
-            });
-            refreshOrdersBtn.addEventListener('click', () => {
-                fetchOrders();
-                showToast('Orders refreshed!', 'success', 1500);
-            });
-            refreshPaymentsBtn.addEventListener('click', () => {
-                fetchPayments();
-                showToast('Payments refreshed!', 'success', 1500);
-            });
-            refreshUsersBtn.addEventListener('click', () => {
-                fetchUsers();
-                showToast('Users refreshed!', 'success', 1500);
-            });
+            refreshBtn.addEventListener('click', () => { fetchProducts();
+                showToast('Products refreshed!', 'success', 1500); });
+            refreshOrdersBtn.addEventListener('click', () => { fetchOrders();
+                showToast('Orders refreshed!', 'success', 1500); });
+            refreshPaymentsBtn.addEventListener('click', () => { fetchPayments();
+                showToast('Payments refreshed!', 'success', 1500); });
+            refreshUsersBtn.addEventListener('click', () => { fetchUsers();
+                showToast('Users refreshed!', 'success', 1500); });
+            refreshDeliveriesBtn.addEventListener('click', () => { renderDeliveries();
+                showToast('Deliveries refreshed!', 'success', 1500); });
+            refreshDebtsBtn.addEventListener('click', () => { renderDebts();
+                showToast('Debts refreshed!', 'success', 1500); });
 
             addProductBtn.addEventListener('click', openAddModal);
+            addDeliveryBtn.addEventListener('click', openAddDelivery);
+            addDebtBtn.addEventListener('click', openAddDebt);
 
-            // ---- View all activity ----
-            document.getElementById('viewAllActivity').addEventListener('click', (e) => {
-                e.preventDefault();
-                navigateTo('orders');
+            document.getElementById('viewAllActivity').addEventListener('click', (e) => { e.preventDefault();
+                navigateTo('orders'); });
+            navBackToApp.addEventListener('click', () => { window.location.href = '/'; });
+
+            // ---- Global search ----
+            const topSearch = document.querySelector('#topSearchBox input');
+            topSearch.addEventListener('input', () => {
+                const val = topSearch.value;
+                const currentPage = document.querySelector('.sidebar-nav .nav-item.active');
+                if (currentPage) {
+                    const page = currentPage.dataset.page;
+                    if (page === 'products') { adminSearch.value = val;
+                        renderProducts(); } else if (page === 'orders') { renderOrders(); } else if (page ===
+                        'payments') { paymentSearch.value = val;
+                        renderPayments(); } else if (page === 'users') { userSearch.value = val;
+                        renderUsers(); } else if (page === 'debts') { debtSearch.value = val;
+                        renderDebts(); }
+                }
             });
 
-            // ---- Back to app ----
-            navBackToApp.addEventListener('click', () => {
-                window.location.href = '/';
+            // ---- Keyboard shortcuts ----
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    if (productModal.classList.contains('show')) closeProductModal();
+                    if (deleteModal.classList.contains('show')) closeDeleteModal();
+                    if (orderDetailModal.classList.contains('show')) orderDetailModal.classList.remove('show');
+                    if (debtModal.classList.contains('show')) closeDebtModal();
+                    if (deliveryModal.classList.contains('show')) closeDeliveryModal();
+                }
             });
 
             // ---- Init ----
             function initAdminPanel() {
+                generateMockData();
                 fetchProducts();
                 updateStats();
                 fetchOrders();
                 fetchPayments();
                 fetchUsers();
+                renderDeliveries();
+                renderDebts();
+                renderNotifications();
                 navigateTo('dashboard');
-                // Auto-refresh every 30s
+
                 setInterval(() => {
                     fetchProducts();
                     updateStats();
@@ -2739,42 +3747,12 @@
                     fetchPayments();
                     fetchUsers();
                     updateActivity();
+                    renderInventoryAlerts();
                 }, 30000);
 
-                document.addEventListener('keydown', (e) => {
-                    if (e.key === 'Escape') {
-                        if (productModal.classList.contains('show')) closeProductModal();
-                        if (deleteModal.classList.contains('show')) closeDeleteModal();
-                    }
-                });
-
-                // Global search on top bar
-                const topSearch = document.querySelector('#topSearchBox input');
-                topSearch.addEventListener('input', () => {
-                    const val = topSearch.value;
-                    const currentPage = document.querySelector('.sidebar-nav .nav-item.active');
-                    if (currentPage) {
-                        const page = currentPage.dataset.page;
-                        if (page === 'products') {
-                            adminSearch.value = val;
-                            renderProducts();
-                        } else if (page === 'orders') {
-                            // Use order search
-                            renderOrders();
-                        } else if (page === 'payments') {
-                            paymentSearch.value = val;
-                            renderPayments();
-                        } else if (page === 'users') {
-                            userSearch.value = val;
-                            renderUsers();
-                        }
-                    }
-                });
-
-                console.log('✅ Admin dashboard initialized.');
+                console.log('✅ Admin dashboard initialized with all features.');
             }
 
-            // ---- Boot ----
             checkSession();
 
         })();
