@@ -3534,71 +3534,70 @@ function stopOrderStatusPolling() {
                 if (e.target === mpesaModal) mpesaModal.classList.remove('show');
             });
 
-           
 function pollPaymentStatus(checkoutId, onComplete, onError) {
     let attempts = 0;
     let finished = false;
 
-    const pollInterval = setInterval(() => {
+    const interval = setInterval(async () => {
         attempts++;
 
-        fetch(`/api/checkout/status?checkoutId=${encodeURIComponent(checkoutId)}`, {
-            credentials: 'include'
-        })
-            .then(response => response.json())
-            .then(statusData => {
-                const status = String(statusData.status || '').toLowerCase();
+        try {
+            const response = await fetch(
+                `/api/checkout/status?checkoutId=${encodeURIComponent(checkoutId)}`,
+                { credentials: 'include' }
+            );
 
-                if (status === 'completed' || status === 'paid') {
-                    finished = true;
-                    clearInterval(pollInterval);
-                    onComplete();
-                } else if (status === 'failed' || attempts >= 20) {
-                    finished = true;
-                    clearInterval(pollInterval);
-                    onError('Payment pending or failed. Check your phone.');
-                }
-            })
-            .catch(() => {});
+            const data = await response.json();
+            const status = String(data.status || '').toLowerCase();
+
+            console.log('Payment status:', status);
+
+            if (status === 'completed' || status === 'paid') {
+                finished = true;
+                clearInterval(interval);
+                onComplete();
+            } else if (status === 'failed' || status === 'cancelled') {
+                finished = true;
+                clearInterval(interval);
+                onError('Payment failed or was cancelled.');
+            } else if (attempts >= 40) {
+                finished = true;
+                clearInterval(interval);
+                onError('Payment confirmation timed out.');
+            }
+        } catch (error) {
+            console.error('Payment status error:', error);
+        }
     }, 3000);
 
     setTimeout(() => {
         if (!finished) {
             finished = true;
-            clearInterval(pollInterval);
-            onError('Payment still processing. Check your M-PESA.');
+            clearInterval(interval);
+            onError('Payment confirmation timed out.');
         }
-    }, 30000);
+    }, 120000);
 }
 
 function showPaymentSuccess() {
-    mpesaStatus.textContent = '✅ Payment confirmed! Order placed. 🎉';
-    mpesaStatus.style.color = '#166534';
+    mpesaStatus.textContent = '✅ Payment confirmed! Order placed.';
+    mpesaStatus.style.color = '#00840b';
+    mpesaModal.classList.remove('show');
 
     showToast(
-        'Payment confirmed! Keep an eye on the Notifications button.',
+        'Payment complete! Check the Notifications button for order status.',
         7000
-    );
-
-    notificationButton.animate(
-        [
-            { transform: 'scale(1)' },
-            { transform: 'scale(1.15)' },
-            { transform: 'scale(1)' }
-        ],
-        { duration: 700, iterations: 3 }
     );
 
     cart = [];
     saveCart();
     updateAllUI();
-    closeAllPanels();
     fetchUserData();
     loadCustomerNotifications();
 
     setTimeout(() => {
         mpesaModal.classList.remove('show');
-    }, 1500);
+    }, 1200);
 
     mpesaPayBtn.disabled = false;
     mpesaPayBtn.textContent = 'Pay Now';

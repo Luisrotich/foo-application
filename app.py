@@ -3,11 +3,17 @@
 import os
 import base64
 import requests
+from pathlib import Path
 from dotenv import load_dotenv
 
 
-load_dotenv()
-
+load_dotenv(Path(__file__).with_name('.env'), override=True)
+print('M-Pesa configuration:')
+print('  Base URL:', os.getenv('MPESA_BASE_URL'))
+print('  Shortcode:', os.getenv('MPESA_SHORTCODE'))
+print('  Consumer key configured:', bool(os.getenv('MPESA_CONSUMER_KEY')))
+print('  Consumer secret configured:', bool(os.getenv('MPESA_CONSUMER_SECRET')))
+print('  Passkey configured:', bool(os.getenv('MPESA_PASSKEY')))
 import os
 import json
 import uuid
@@ -98,8 +104,22 @@ def get_mpesa_access_token():
     response.raise_for_status()
     return response.json()['access_token']
 
+def validate_mpesa_config():
+    required = [
+        'MPESA_BASE_URL',
+        'MPESA_CONSUMER_KEY',
+        'MPESA_CONSUMER_SECRET',
+        'MPESA_SHORTCODE',
+        'MPESA_PASSKEY',
+        'MPESA_CALLBACK_URL'
+    ]
+
+    missing = [key for key in required if not os.getenv(key)]
+    if missing:
+        raise RuntimeError(f"Missing M-Pesa settings: {', '.join(missing)}")
 
 def send_stk_push(phone, amount, account_reference):
+    validate_mpesa_config()
     timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
     shortcode = os.getenv('MPESA_SHORTCODE')
     passkey = os.getenv('MPESA_PASSKEY')
@@ -131,6 +151,7 @@ def send_stk_push(phone, amount, account_reference):
         json=payload,
         timeout=30
     )
+    print('M-Pesa response:', response.status_code, response.text)
     response.raise_for_status()
     return response.json()
 # ============================
@@ -477,23 +498,75 @@ def checkout():
         'checkoutRequestId': checkout_id,
         'payment_id': payment_id
     }), 201
+def query_mpesa_status(checkout_id):
+    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+    shortcode = os.getenv('MPESA_SHORTCODE')
+    passkey = os.getenv('MPESA_PASSKEY')
 
+    password = base64.b64encode(
+        f'{shortcode}{passkey}{timestamp}'.encode()
+    ).decode()
+
+    response = requests.post(
+        f"{os.getenv('MPESA_BASE_URL')}/mpesa/stkpushquery/v1/query",
+        headers={
+            'Authorization': f'Bearer {get_mpesa_access_token()}',
+            'Content-Type': 'application/json'
+        },
+        json={
+            'BusinessShortCode': shortcode,
+            'Password': password,
+            'Timestamp': timestamp,
+            'CheckoutRequestID': checkout_id
+        },
+        timeout=30
+    )
+
+    response.raise_for_status()
+    return response.json()
 @app.route('/api/checkout/status', methods=['GET'])
 def checkout_status():
     checkout_id = request.args.get('checkoutId')
 
-    if not checkout_id:
-        return jsonify({'error': 'Missing checkoutId'}), 400
+    payment = next(
+        (
+            item for item in payments.values()
+            if item.get('checkout_request_id') == checkout_id
+        ),
+        None
+    )
 
-    for payment in payments.values():
-        if payment.get('checkout_request_id') == checkout_id:
-            return jsonify({
-                'status': payment['status'],
-                'transactionId': payment.get('transaction_id', ''),
-                'paymentId': payment['id']
-            }), 200
+    if not payment:
+        return jsonify({'error': 'Checkout not found'}), 404
 
-    return jsonify({'error': 'Checkout ID not found'}), 404
+    if payment.get('status') == 'pending':
+        try:
+            result = query_mpesa_status(checkout_id)
+            result_code = result.get('ResultCode')
+
+            if str(result_code) == '0':
+                payment['status'] = 'completed'
+
+                order = orders.get(payment['order_id'])
+                if order:
+                    order['status'] = 'paid'
+
+                save_notification(
+                    f"Payment completed for order #{payment['order_id']}",
+                    'payment'
+                )
+
+            elif str(result_code) in ('1032', '1037'):
+                payment['status'] = 'failed'
+
+        except requests.RequestException as error:
+            print('M-Pesa status query failed:', error)
+
+    return jsonify({
+        'status': payment.get('status', 'pending'),
+        'paymentId': payment['id']
+    }), 200
+
 @app.route('/api/mpesa/callback', methods=['POST'])
 def mpesa_callback():
     callback = request.get_json(silent=True) or {}
@@ -532,6 +605,7 @@ def mpesa_callback():
 
         payment['status'] = 'completed'
         payment['transaction_id'] = receipt
+       
 
         if order:
             order['status'] = 'paid'
