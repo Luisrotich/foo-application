@@ -1,7 +1,7 @@
 {
-  "name": "Fresh Ready Foods",
+  "name": "Foody",
   "short_name": "Fresh Foods",
-  "description": "Order fresh groceries and meals",
+  "description": "Order fresh meals",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#fffff",
