@@ -2389,9 +2389,12 @@
                 toastTimeout = setTimeout(() => toast.classList.remove('show'), duration);
             }
 
-            function formatPrice(amount) {
-                return '$' + Number.parseFloat(amount).toFixed(2);
-            }
+           function formatPrice(amount) {
+    return `KES ${Number(amount || 0).toLocaleString('en-KE', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    })}`;
+}
 
             function escHtml(str) {
                 if (!str) return '';
