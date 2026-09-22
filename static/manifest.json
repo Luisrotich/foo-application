@@ -4,7 +4,7 @@
   "description": "Order fresh groceries and meals",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#F97316",
+  "background_color": "#fffff",
   "theme_color": "#F97316",
   "icons": [
     {
