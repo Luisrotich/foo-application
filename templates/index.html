@@ -3095,7 +3095,6 @@ function stopOrderStatusPolling() {
                     if (typeof item.qty !== 'number' || item.qty < 1) item.qty = 1;
                 });
             }
-
             function saveCart() {
                 try {
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
