@@ -26,7 +26,18 @@ app = Flask(__name__)
 app.secret_key = 'supersecretkey-freshready-2026'
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB
+from flask import Flask, session
+import os
 
+app = Flask(__name__)
+
+app.config.update(
+    SECRET_KEY=os.environ['SECRET_KEY'],
+    SESSION_COOKIE_SECURE=True,
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE='Lax',
+    PERMANENT_SESSION_LIFETIME=timedelta(days=30)
+)
 # Ensure folders exist
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.makedirs('templates', exist_ok=True)
@@ -174,6 +185,8 @@ def user_status():
 
 @app.route('/api/user/login', methods=['POST'])
 def user_login():
+    session.permanent = True
+    session['user_id'] = user['id']
     data = request.get_json()
     email = data.get('email')
     password = data.get('password')
@@ -629,6 +642,8 @@ def mpesa_callback():
 # ============================
 @app.route('/api/admin/login', methods=['POST'])
 def admin_login():
+    session.permanent = True
+    session['admin_username'] = username
     data = request.get_json()
     username = data.get('username', '').strip()
     password = data.get('password', '').strip()
