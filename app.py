@@ -937,8 +937,8 @@ def seed_data():
             'name': 'John Doe',
             'email': 'john@example.com',
             'password_hash': hashed,
-            'phone': '254712345678',
-            'address': 'Kimathi Street, Nyeri Town, Opposite QuickMart',
+            'phone': '254745972350',
+            'address': 'Kimathi Street',
             'created_at': datetime.now().isoformat(),
             'favorites': [],
             'addresses': []
@@ -948,77 +948,15 @@ def seed_data():
     if not products:
         sample_products = [
             {'id': 1, 'name': 'Organic Apple', 'category': 'Fruits', 'price': 2.99, 'stock': 25, 'discount': 0, 'prep_time': 5, 'rating': 4.5, 'featured': 1, 'description': 'Fresh organic apples', 'image': '', 'image_icon': 'fa-apple-alt', 'available': 1, 'sort_order': 1},
-            {'id': 2, 'name': 'Fresh Bread', 'category': 'Breads', 'price': 3.49, 'stock': 12, 'discount': 0.50, 'prep_time': 10, 'rating': 4.2, 'featured': 0, 'description': 'Artisan sourdough', 'image': '', 'image_icon': 'fa-bread-slice', 'available': 1, 'sort_order': 2},
-            {'id': 3, 'name': 'Carrot Pack', 'category': 'Veggies', 'price': 1.99, 'stock': 40, 'discount': 0, 'prep_time': 5, 'rating': 4.0, 'featured': 0, 'description': 'Organic carrots', 'image': '', 'image_icon': 'fa-carrot', 'available': 1, 'sort_order': 3},
-            {'id': 4, 'name': 'Cheese Block', 'category': 'Dairy', 'price': 4.99, 'stock': 8, 'discount': 1.00, 'prep_time': 0, 'rating': 4.8, 'featured': 1, 'description': 'Aged cheddar', 'image': '', 'image_icon': 'fa-cheese', 'available': 1, 'sort_order': 4},
-            {'id': 5, 'name': 'Garden Salad', 'category': 'Salad', 'price': 5.99, 'stock': 15, 'discount': 0, 'prep_time': 15, 'rating': 4.3, 'featured': 0, 'description': 'Mixed greens with dressing', 'image': '', 'image_icon': 'fa-leaf', 'available': 1, 'sort_order': 5},
-            {'id': 6, 'name': 'Orange Juice', 'category': 'Drinks', 'price': 3.99, 'stock': 20, 'discount': 0, 'prep_time': 5, 'rating': 4.1, 'featured': 0, 'description': 'Fresh squeezed orange juice', 'image': '', 'image_icon': 'fa-wine-bottle', 'available': 1, 'sort_order': 6},
-            {'id': 7, 'name': 'Tomato', 'category': 'Veggies', 'price': 1.49, 'stock': 3, 'discount': 0, 'prep_time': 5, 'rating': 3.9, 'featured': 0, 'description': 'Ripe tomatoes', 'image': '', 'image_icon': 'fa-apple-alt', 'available': 1, 'sort_order': 7},
-            {'id': 8, 'name': 'Cucumber', 'category': 'Veggies', 'price': 1.79, 'stock': 18, 'discount': 0, 'prep_time': 5, 'rating': 4.0, 'featured': 0, 'description': 'Fresh cucumbers', 'image': '', 'image_icon': 'fa-apple-alt', 'available': 1, 'sort_order': 8},
+          {'id': 7, 'name': 'Tomato', 'category': 'Veggies', 'price': 1.49, 'stock': 3, 'discount': 0, 'prep_time': 5, 'rating': 3.9, 'featured': 0, 'description': 'Ripe tomatoes', 'image': '', 'image_icon': 'fa-apple-alt', 'available': 1, 'sort_order': 7},
         ]
         for p in sample_products:
             products[p['id']] = p
         product_id_counter = 9
 
-    if not orders:
-        user1 = users.get(1)
-        if user1:
-            items = [{'id': 1, 'name': 'Organic Apple', 'qty': 2, 'price': 2.99}, {'id': 3, 'name': 'Carrot Pack', 'qty': 1, 'price': 1.99}]
-            total = 2*2.99 + 1.99
-            total += total * 0.1
-            oid = 1000
-            orders[oid] = {
-                'id': oid,
-                'user_id': 1,
-                'customer': 'John Doe',
-                'phone': '254712345678',
-                'items': json.dumps(items),
-                'total': total,
-                'status': 'paid',
-                'created_at': (datetime.now() - timedelta(days=2)).isoformat(),
-                'note': 'No onions please',
-                'delivery_address': 'Kimathi Street, Nyeri Town, Opposite QuickMart',
-                'payment_id': 500
-            }
-            order_id_counter = 1001
+  
 
-    if not payments:
-        payments[500] = {
-            'id': 500,
-            'order_id': 1000,
-            'phone': '254712345678',
-            'amount': orders[1000]['total'],
-            'status': 'completed',
-            'transaction_id': 'RKT91ABC',
-            'checkout_request_id': 'CHK123456',
-            'created_at': (datetime.now() - timedelta(days=2)).isoformat()
-        }
-        payment_id_counter = 501
-
-    if not deliveries:
-        sample_deliveries = [
-            {'id': 300, 'name': 'John Ochieng', 'phone': '254712345678', 'orders': 4, 'status': 'active', 'last_delivery': datetime.now().isoformat()},
-            {'id': 301, 'name': 'Mercy Wanjiru', 'phone': '254798765432', 'orders': 2, 'status': 'busy', 'last_delivery': datetime.now().isoformat()},
-            {'id': 302, 'name': 'Peter Kamau', 'phone': '254723456789', 'orders': 0, 'status': 'offline', 'last_delivery': (datetime.now() - timedelta(days=1)).isoformat()},
-        ]
-        for d in sample_deliveries:
-            deliveries[d['id']] = d
-        delivery_id_counter = 303
-
-    if not debts:
-        sample_debts = [
-            {'id': 400, 'customer': 'John Doe', 'phone': '254712345678', 'amount_owed': 50.00, 'paid': 20.00, 'due_date': (datetime.now() + timedelta(days=10)).isoformat().split('T')[0], 'created_at': datetime.now().isoformat()},
-            {'id': 401, 'customer': 'Jane Smith', 'phone': '254798765432', 'amount_owed': 30.00, 'paid': 30.00, 'due_date': (datetime.now() + timedelta(days=5)).isoformat().split('T')[0], 'created_at': datetime.now().isoformat()},
-        ]
-        for d in sample_debts:
-            debts[d['id']] = d
-        debt_id_counter = 402
-
-    if not notifications:
-        save_notification("New order #1001 placed by Jane Smith", 'order')
-        save_notification("🔴 Tomatoes are out of stock!", 'inventory')
-        save_notification("🟡 Bread has only 3 remaining", 'inventory')
-        save_notification("Payment #501 completed for order #1002", 'payment')
+   
 
 # Seed on startup
 with app.app_context():
