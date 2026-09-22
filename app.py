@@ -246,7 +246,14 @@ def user_profile():
             },
             'favorites': user.get('favorites', []),
             'addresses': user.get('addresses', []),
-            'orders': [o for o in orders.values() if o.get('user_id') == user['id']]
+            'orders': sorted(
+    [
+        order for order in orders.values()
+        if order.get('user_id') == user['id']
+    ],
+    key=lambda order: order.get('created_at', ''),
+    reverse=True
+)
         }), 200
     else:
         data = request.get_json()

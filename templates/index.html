@@ -631,18 +631,30 @@
 
         /* ===== BOTTOM NAV ===== */
         .bottom-nav {
-            display: flex;
+            display: flex !important;
             justify-content: space-around;
             padding: 0.4rem 0 0.5rem;
             background: #f97316;
             flex-shrink: 0;
-            position: sticky;
+            position: fixed !important;
             bottom: 0;
+            left: 0;
+            right: 0;
             z-index: 100;
+            transform: none !important;
             border-top: none;
             box-shadow: 0 -4px 20px rgba(249, 115, 22, 0.25);
             border-radius: 0 0 28px 28px;
         }
+        body {
+    padding-bottom: 85px;
+}
+
+@media (min-width: 900px) {
+    .bottom-nav {
+        display: flex !important;
+    }
+}
         .bottom-nav .nav-item {
             display: flex;
             flex-direction: column;
@@ -2818,46 +2830,59 @@ function stopOrderStatusPolling() {
 }
 // ...existing code...
 
-            function renderOrders() {
-                if (!userOrders.length) {
-                    orderList.innerHTML = '<p style="color:#94a3b8;">No orders yet.</p>';
-                    return;
-                }
-                let html = '';
-                for (const o of userOrders) {
-                    const statusClass = o.status || 'preparing';
-                    // Escape single quotes for JSON in data attribute using replaceAll
-                    const orderJson = JSON.stringify(o).replaceAll("'", "&#39;");
-                    html += `<div class="order-item">
-                        <div class="order-header">
-                            <span>#${o.orderId || o.order_id || o.id}</span>
-                            <span class="order-status ${statusClass}">${statusClass.toUpperCase()}</span>
-                        </div>
-                        <div class="order-details">
-                            <span>📦 ${o.items ? o.items.reduce((s, i) => s + i.qty, 0) : 0} items</span>
-                            <span>💰 ${formatPrice(o.total || 0)}</span>
-                            <span>📅 ${o.createdAt ? new Date(o.createdAt).toLocaleDateString() : ''}</span>
-                        </div>
-                        <button class="order-reorder" data-order='${orderJson}'>🔄 Reorder</button>
-                    </div>`;
-                }
-                orderList.innerHTML = html;
-                orderList.querySelectorAll('.order-reorder').forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        const order = JSON.parse(btn.dataset.order);
-                        if (order.items) {
-                            for (const item of order.items) {
-                                const product = getProductById(item.id);
-                                if (product && product.stock > 0) {
-                                    addToCart(product, item.qty || 1);
-                                }
-                            }
-                            showToast('Order items added to cart!', 2000);
-                        }
-                    });
-                });
-            }
+      function renderOrders() {
+    const recentOrders = [...userOrders]
+        .sort((a, b) =>
+            new Date(b.created_at || b.createdAt || 0) -
+            new Date(a.created_at || a.createdAt || 0)
+        )
+        .slice(0, 10);
 
+    if (!recentOrders.length) {
+        orderList.innerHTML =
+            '<p style="color:#94a3b8;">No orders yet.</p>';
+        return;
+    }
+
+    orderList.innerHTML = recentOrders.map(order => {
+        const orderId = order.id || order.order_id || order.orderId;
+        const status = String(order.status || 'pending').toLowerCase();
+
+        let items = order.items || [];
+        if (typeof items === 'string') {
+            try {
+                items = JSON.parse(items);
+            } catch {
+                items = [];
+            }
+        }
+
+        const itemCount = items.reduce(
+            (total, item) => total + Number(item.qty || 0),
+            0
+        );
+
+        return `
+            <div class="order-item">
+                <div class="order-header">
+                    <span>Order #${orderId}</span>
+                    <span class="order-status ${status}">
+                        ${status.toUpperCase()}
+                    </span>
+                </div>
+                <div class="order-details">
+                    <span>📦 ${itemCount} items</span>
+                    <span>💰 ${formatPrice(order.total || 0)}</span>
+                    <span>
+                        📅 ${new Date(
+                            order.created_at || order.createdAt
+                        ).toLocaleDateString()}
+                    </span>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
             function renderFavorites() {
                 if (!userFavorites.length) {
                     favGrid.innerHTML = '<p style="color:#94a3b8;grid-column:1/-1;">No favorites yet.</p>';
