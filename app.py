@@ -23,20 +23,15 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
-app.secret_key = 'supersecretkey-freshready-2026'
-app.config['UPLOAD_FOLDER'] = 'static/uploads'
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB
-from flask import Flask, session
-import os
-
-app = Flask(__name__)
 
 app.config.update(
-    SECRET_KEY=os.environ['SECRET_KEY'],
+    SECRET_KEY=os.environ.get('SECRET_KEY', 'local-development-secret'),
     SESSION_COOKIE_SECURE=True,
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SAMESITE='Lax',
-    PERMANENT_SESSION_LIFETIME=timedelta(days=30)
+    PERMANENT_SESSION_LIFETIME=timedelta(days=30),
+    UPLOAD_FOLDER='static/uploads',
+    MAX_CONTENT_LENGTH=16 * 1024 * 1024
 )
 # Ensure folders exist
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -185,8 +180,7 @@ def user_status():
 
 @app.route('/api/user/login', methods=['POST'])
 def user_login():
-    session.permanent = True
-    session['user_id'] = user['id']
+   
     data = request.get_json()
     email = data.get('email')
     password = data.get('password')
@@ -195,6 +189,7 @@ def user_login():
     for uid, user in users.items():
         if user['email'] == email:
             if check_password_hash(user['password_hash'], password):
+                session.permanent = True
                 session['user_id'] = user['id']
                 return jsonify({'success': True, 'name': user['name']}), 200
             else:
@@ -642,8 +637,7 @@ def mpesa_callback():
 # ============================
 @app.route('/api/admin/login', methods=['POST'])
 def admin_login():
-    session.permanent = True
-    session['admin_username'] = username
+   
     data = request.get_json()
     username = data.get('username', '').strip()
     password = data.get('password', '').strip()
@@ -1026,6 +1020,9 @@ with app.app_context():
 # ============================
 # RUN
 # ============================
-
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(
+        host='0.0.0.0',
+        port=int(os.getenv('PORT', 5000)),
+        debug=False
+    )
