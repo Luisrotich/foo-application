@@ -29,7 +29,9 @@ app.config.update(
     SESSION_COOKIE_SECURE=True,
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SAMESITE='Lax',
-    PERMANENT_SESSION_LIFETIME=timedelta(days=30)
+    PERMANENT_SESSION_LIFETIME=timedelta(days=30),
+    UPLOAD_FOLDER=os.path.join(app.root_path, 'static', 'uploads'),
+    MAX_CONTENT_LENGTH=16 * 1024 * 1024
 )
 # Ensure folders exist
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
