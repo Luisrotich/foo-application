@@ -1703,7 +1703,7 @@
                     </div>
                     <div class="stat-card">
                         <div class="stat-top">
-                            <div><div class="stat-label">Revenue</div><div class="stat-value" id="statRevenue">$0</div></div>
+                            <div><div class="stat-label">Revenue</div><div class="stat-value" id="statRevenue">KES 0.00</div></div>
                             <div class="stat-icon green"><i class="fas fa-dollar-sign"></i></div>
                         </div>
                     </div>
@@ -1721,7 +1721,7 @@
                     </div>
                     <div class="stat-card">
                         <div class="stat-top">
-                            <div><div class="stat-label">Today's M-PESA</div><div class="stat-value" id="statMpesaToday">$0</div></div>
+                            <div><div class="stat-label">Today's M-PESA</div><div class="stat-value" id="statMpesaToday">KES 0.00</div></div>
                             <div class="stat-icon yellow"><i class="fas fa-mobile-alt"></i></div>
                         </div>
                     </div>
@@ -1793,7 +1793,7 @@
             ============================================================ -->
             <div id="page-payments" class="hidden">
                 <div class="stats-grid" style="margin-bottom:1.2rem;" id="paymentStatsGrid">
-                    <div class="stat-card"><div class="stat-top"><div><div class="stat-label">Today's M-PESA</div><div class="stat-value" id="payStatToday">$0</div></div><div class="stat-icon green"><i class="fas fa-mobile-alt"></i></div></div></div>
+                    <div class="stat-card"><div class="stat-top"><div><div class="stat-label">Today's M-PESA</div><div class="stat-value" id="payStatToday">KES 0.00</div></div><div class="stat-icon green"><i class="fas fa-mobile-alt"></i></div></div></div>
                     <div class="stat-card"><div class="stat-top"><div><div class="stat-label">Successful</div><div class="stat-value" id="payStatSuccess">0</div></div><div class="stat-icon green"><i class="fas fa-check-circle"></i></div></div></div>
                     <div class="stat-card"><div class="stat-top"><div><div class="stat-label">Pending STK</div><div class="stat-value" id="payStatPending">0</div></div><div class="stat-icon yellow"><i class="fas fa-clock"></i></div></div></div>
                     <div class="stat-card"><div class="stat-top"><div><div class="stat-label">Failed</div><div class="stat-value" id="payStatFailed">0</div></div><div class="stat-icon red"><i class="fas fa-times-circle"></i></div></div></div>
@@ -1911,7 +1911,7 @@
                     <h3 style="font-size:1.1rem;font-weight:600;margin-bottom:1.2rem;"><i class="fas fa-cog" style="color:#f97316;margin-right:0.5rem;"></i> Store Settings</h3>
                     <div class="setting-group"><label>Store Name</label><input type="text" value="Fresh Ready Foods" /></div>
                     <div class="setting-group"><label>Tax Rate (%)</label><input type="number" value="10" /></div>
-                    <div class="setting-group"><label>Currency</label><input type="text" value="USD" /></div>
+                    <div class="setting-group"><label>Currency</label><input type="text" value="KES" /></div>
                     <button class="btn btn-primary"><i class="fas fa-save"></i> Save Settings</button>
                 </div>
             </div>
@@ -1931,11 +1931,11 @@
                 <div class="form-group"><label>Product Name</label><input type="text" id="pName" placeholder="e.g. Organic Apple" required /></div>
                 <div class="form-row">
                     <div class="form-group"><label>Category</label><select id="pCategory"><option value="Fruits">Fruits</option><option value="Breads">Breads</option><option value="Veggies">Veggies</option><option value="Dairy">Dairy</option><option value="Salad">Salad</option><option value="Drinks">Drinks</option></select></div>
-                    <div class="form-group"><label>Price ($)</label><input type="number" id="pPrice" placeholder="0.00" step="0.01" min="0" required /></div>
+                    <div class="form-group"><label>Price (KES)</label><input type="number" id="pPrice" placeholder="0.00" step="0.01" min="0" required /></div>
                 </div>
                 <div class="form-row-3">
                     <div class="form-group"><label>Stock</label><input type="number" id="pStock" placeholder="10" min="0" required /></div>
-                    <div class="form-group"><label>Discount Price ($)</label><input type="number" id="pDiscount" placeholder="0.00" step="0.01" min="0" /></div>
+                    <div class="form-group"><label>Discount Price (KES)</label><input type="number" id="pDiscount" placeholder="0.00" step="0.01" min="0" /></div>
                     <div class="form-group"><label>Prep Time (min)</label><input type="number" id="pPrepTime" placeholder="15" min="0" /></div>
                 </div>
                 <div class="form-row">
@@ -1999,8 +1999,8 @@
                 <input type="hidden" id="editDebtId" />
                 <div class="form-group"><label>Customer Name</label><input type="text" id="dCustomer" placeholder="John Doe" required /></div>
                 <div class="form-group"><label>Phone</label><input type="text" id="dPhone" placeholder="2547XXXXXXXX" /></div>
-                <div class="form-row"><div class="form-group"><label>Amount Owed ($)</label><input type="number" id="dAmount" placeholder="0.00" step="0.01" min="0" required /></div>
-                <div class="form-group"><label>Paid ($)</label><input type="number" id="dPaid" placeholder="0.00" step="0.01" min="0" /></div></div>
+                <div class="form-row"><div class="form-group"><label>Amount Owed (KES)</label><input type="number" id="dAmount" placeholder="0.00" step="0.01" min="0" required /></div>
+                <div class="form-group"><label>Paid (KES)</label><input type="number" id="dPaid" placeholder="0.00" step="0.01" min="0" /></div></div>
                 <div class="form-group"><label>Due Date</label><input type="date" id="dDueDate" /></div>
                 <div class="form-actions"><button type="button" class="btn btn-outline" id="debtModalCancel">Cancel</button><button type="submit" class="btn btn-primary" id="debtModalSubmit"><i class="fas fa-save"></i> Save</button></div>
             </form>
@@ -2252,6 +2252,15 @@
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
     })}`;
+}function parseOrderItems(items) {
+    if (Array.isArray(items)) return items;
+
+    try {
+        const parsed = JSON.parse(items || '[]');
+        return Array.isArray(parsed) ? parsed : [];
+    } catch {
+        return [];
+    }
 }
 
             function escHtml(str) {
@@ -2379,174 +2388,16 @@
             adminLogoutBtn.addEventListener('click', () => { if (confirm('Are you sure you want to log out?')) logoutAdmin(); });
 
             // ---- Data generation (mock) ----
-            function generateMockData() {
-                // Products with all fields
-                if (products.length === 0) {
-                    const names = ['Organic Apple', 'Fresh Bread', 'Carrot Pack', 'Cheese Block', 'Garden Salad', 'Orange Juice',
-                        'Tomato', 'Cucumber', 'Milk', 'Yogurt'
-                    ];
-                    const cats = ['Fruits', 'Breads', 'Veggies', 'Dairy', 'Salad', 'Drinks', 'Veggies', 'Veggies', 'Dairy',
-                        'Dairy'
-                    ];
-                    const prices = [2.99, 3.49, 1.99, 4.99, 5.99, 3.99, 1.49, 1.79, 3.29, 2.49];
-                    const stocks = [25, 12, 40, 8, 15, 20, 3, 18, 10, 5];
-                    const discounts = [0, 0.50, 0, 1.00, 0, 0, 0, 0, 0, 0.30];
-                    const prepTimes = [5, 10, 5, 0, 15, 5, 5, 5, 0, 0];
-                    products = names.map((n, i) => ({
-                        id: i + 1,
-                        name: n,
-                        category: cats[i],
-                        price: prices[i],
-                        stock: stocks[i],
-                        discount: discounts[i],
-                        prep_time: prepTimes[i],
-                        rating: (3 + Math.random() * 2).toFixed(1),
-                        featured: i % 3 === 0 ? 1 : 0,
-                        description: 'Fresh and delicious ' + n.toLowerCase(),
-                        image: null,
-                        image_icon: 'fa-apple-alt',
-                        available: 1,
-                        sort_order: i
-                    }));
-                }
-
-                // Orders
-                if (allOrders.length === 0) {
-                    const statuses = ['pending', 'preparing', 'dispatched', 'delivered', 'cancelled'];
-                    const customers = ['John Doe', 'Jane Smith', 'Bob Johnson', 'Alice Brown', 'Carlos Gomez', 'Maria Lopez',
-                        'David Kim', 'Sarah Lee'
-                    ];
-                    const phones = ['254712345678', '254798765432', '254723456789', '254745678901', '254756789012',
-                        '254767890123', '254778901234', '254789012345'
-                    ];
-                    for (let i = 1; i <= 25; i++) {
-                        const numItems = 1 + Math.floor(Math.random() * 4);
-                        const items = [];
-                        let total = 0;
-                        for (let j = 0; j < numItems; j++) {
-                            const p = products[Math.floor(Math.random() * products.length)];
-                            const qty = 1 + Math.floor(Math.random() * 3);
-                            const price = p.price - (p.discount || 0);
-                            items.push({ id: p.id, name: p.name, qty, price });
-                            total += price * qty;
-                        }
-                        const cIdx = Math.floor(Math.random() * customers.length);
-                        const status = statuses[Math.floor(Math.random() * statuses.length)];
-                        const date = new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000);
-                        allOrders.push({
-                            id: 1000 + i,
-                            customer: customers[cIdx],
-                            phone: phones[cIdx],
-                            items: JSON.stringify(items),
-                            total: total + total * 0.1,
-                            status: status,
-                            created_at: date.toISOString(),
-                            note: Math.random() > 0.7 ? 'No onions please.' : '',
-                            delivery_address: 'Kimathi Street, Nyeri Town, Opposite QuickMart'
-                        });
-                    }
-                    // Sort by date desc
-                    allOrders.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-                }
-
-                // Payments
-                if (allPayments.length === 0) {
-                    const statuses = ['completed', 'pending', 'failed'];
-                    for (let i = 1; i <= 20; i++) {
-                        const order = allOrders[i % allOrders.length] || allOrders[0];
-                        const status = statuses[Math.floor(Math.random() * statuses.length)];
-                        const date = new Date(Date.now() - Math.random() * 20 * 24 * 60 * 60 * 1000);
-                        allPayments.push({
-                            id: 500 + i,
-                            order_id: order.id,
-                            phone: order.phone || '254712345678',
-                            amount: order.total || 10 + Math.random() * 50,
-                            status: status,
-                            transaction_id: status === 'completed' ? 'RKT' + String.fromCharCode(65 + Math.floor(Math
-                                .random() * 26)) + String(100 + Math.floor(Math.random() * 900)) : '',
-                            checkout_request_id: status !== 'failed' ? 'CHK' + String(1000 + i) : '',
-                            created_at: date.toISOString()
-                        });
-                    }
-                }
-
-                // Users
-                if (allUsers.length === 0) {
-                    const names = ['John Doe', 'Jane Smith', 'Bob Johnson', 'Alice Brown', 'Carlos Gomez', 'Maria Lopez',
-                        'David Kim', 'Sarah Lee', 'Michael Wang', 'Emily Davis'
-                    ];
-                    const emails = ['john@example.com', 'jane@example.com', 'bob@example.com', 'alice@example.com',
-                        'carlos@example.com', 'maria@example.com', 'david@example.com', 'sarah@example.com',
-                        'michael@example.com', 'emily@example.com'
-                    ];
-                    for (let i = 1; i <= names.length; i++) {
-                        const orderCount = Math.floor(Math.random() * 8);
-                        const spent = orderCount * (5 + Math.random() * 30);
-                        allUsers.push({
-                            id: 200 + i,
-                            name: names[i - 1],
-                            email: emails[i - 1],
-                            phone: '2547' + String(10000000 + Math.floor(Math.random() * 90000000)),
-                            order_count: orderCount,
-                            total_spent: spent,
-                            created_at: new Date(Date.now() - Math.random() * 90 * 24 * 60 * 60 * 1000).toISOString(),
-                            blocked: false
-                        });
-                    }
-                }
-
-                // Deliveries
-                if (deliveries.length === 0) {
-                    const riders = ['John Ochieng', 'Mercy Wanjiru', 'Peter Kamau', 'Grace Akinyi', 'Kevin Otieno'];
-                    const phones = ['254712345678', '254798765432', '254723456789', '254745678901', '254756789012'];
-                    const statuses = ['active', 'busy', 'offline', 'active', 'busy'];
-                    for (let i = 0; i < riders.length; i++) {
-                        deliveries.push({
-                            id: 300 + i,
-                            name: riders[i],
-                            phone: phones[i],
-                            orders: Math.floor(Math.random() * 6),
-                            status: statuses[i % statuses.length],
-                            last_delivery: new Date(Date.now() - Math.random() * 5 * 60 * 60 * 1000).toISOString()
-                        });
-                    }
-                }
-
-                // Debts
-                if (debts.length === 0) {
-                    const customers = ['John Doe', 'Jane Smith', 'Bob Johnson', 'Alice Brown', 'Carlos Gomez'];
-                    const phones = ['254712345678', '254798765432', '254723456789', '254745678901', '254756789012'];
-                    for (let i = 0; i < customers.length; i++) {
-                        const owed = 10 + Math.random() * 90;
-                        const paid = Math.random() * owed;
-                        debts.push({
-                            id: 400 + i,
-                            customer: customers[i],
-                            phone: phones[i],
-                            amount_owed: Math.round(owed * 100) / 100,
-                            paid: Math.round(paid * 100) / 100,
-                            due_date: new Date(Date.now() + (7 + Math.random() * 30) * 24 * 60 * 60 * 1000)
-                                .toISOString().split('T')[0],
-                            created_at: new Date().toISOString()
-                        });
-                    }
-                }
-
-                // Notifications
-                if (notifications.length === 0) {
-                    notifications = [
-                        { id: 1, type: 'order', message: 'New order #1001 placed by John Doe', time: '2 min ago',
-                            read: false },
-                        { id: 2, type: 'inventory', message: '🔴 Tomatoes are out of stock!', time: '15 min ago',
-                            read: false },
-                        { id: 3, type: 'inventory', message: '🟡 Bread has only 3 remaining', time: '1 hour ago',
-                            read: false },
-                        { id: 4, type: 'payment', message: 'Payment #501 completed for order #1002', time: '2 hours ago',
-                            read: true },
-                    ];
-                }
-            }
-
+        function generateMockData() {
+    // No demo data. Records come only from the backend.
+    products = Array.isArray(products) ? products : [];
+    allOrders = Array.isArray(allOrders) ? allOrders : [];
+    allPayments = Array.isArray(allPayments) ? allPayments : [];
+    allUsers = Array.isArray(allUsers) ? allUsers : [];
+    deliveries = Array.isArray(deliveries) ? deliveries : [];
+    debts = Array.isArray(debts) ? debts : [];
+    notifications = Array.isArray(notifications) ? notifications : [];
+}
             // ---- Inventory Alerts ----
             function renderInventoryAlerts() {
                 const alerts = [];
@@ -2582,20 +2433,21 @@
             }
 
             // ---- API: Products ----
-            async function fetchProducts() {
-                try {
-                    const res = await fetch(API.products, { credentials: 'include' });
-                    if (!res.ok) throw new Error();
-                    products = await res.json();
-                    if (!products || products.length === 0) generateMockData();
-                    renderProducts();
-                    renderInventoryAlerts();
-                } catch (e) {
-                    generateMockData();
-                    renderProducts();
-                    renderInventoryAlerts();
-                }
-            }
+           async function fetchProducts() {
+    try {
+        const res = await fetch(API.products, { credentials: 'include' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        const data = await res.json();
+        products = Array.isArray(data) ? data : [];
+    } catch (error) {
+        console.error('Failed to load products:', error);
+        products = [];
+    }
+
+    renderProducts();
+    renderInventoryAlerts();
+}
 
             async function saveProduct(productData, id = null) {
                 const url = id ? `${API.products}/${id}` : API.products;
@@ -2684,19 +2536,34 @@
                 }
             }
 
-            // ---- API: Orders ----
-            async function fetchOrders() {
-                try {
-                    const res = await fetch(API.orders, { credentials: 'include' });
-                    if (!res.ok) throw new Error();
-                    allOrders = await res.json();
-                    if (!allOrders || allOrders.length === 0) generateMockData();
-                    renderOrders();
-                } catch (e) {
-                    generateMockData();
-                    renderOrders();
-                }
-            }
+         async function fetchOrders() {
+    try {
+        const res = await fetch(API.orders, { credentials: 'include' });
+        if (!res.ok) throw new Error();
+
+        allOrders = await res.json();
+        allOrders = Array.isArray(allOrders) ? allOrders : [];
+        renderOrders();
+    } catch (error) {
+        console.error('Failed to load orders:', error);
+        allOrders = [];
+        renderOrders();
+    }
+}
+async function fetchPayments() {
+    try {
+        const res = await fetch(API.payments, { credentials: 'include' });
+        if (!res.ok) throw new Error();
+
+        const data = await res.json();
+        allPayments = Array.isArray(data) ? data : [];
+        renderPayments();
+    } catch (error) {
+        console.error('Failed to load payments:', error);
+        allPayments = [];
+        renderPayments();
+    }
+}
 
             async function updateOrderStatus(orderId, status) {
                 try {
@@ -2733,19 +2600,6 @@
                 }
             }
 
-            // ---- API: Payments ----
-            async function fetchPayments() {
-                try {
-                    const res = await fetch(API.payments, { credentials: 'include' });
-                    if (!res.ok) throw new Error();
-                    allPayments = await res.json();
-                    if (!allPayments || allPayments.length === 0) generateMockData();
-                    renderPayments();
-                } catch (e) {
-                    generateMockData();
-                    renderPayments();
-                }
-            }
 
             async function deletePayment(id) {
                 try {
@@ -2759,19 +2613,20 @@
                 }
             }
 
-            // ---- API: Users ----
-            async function fetchUsers() {
-                try {
-                    const res = await fetch(API.users, { credentials: 'include' });
-                    if (!res.ok) throw new Error();
-                    allUsers = await res.json();
-                    if (!allUsers || allUsers.length === 0) generateMockData();
-                    renderUsers();
-                } catch (e) {
-                    generateMockData();
-                    renderUsers();
-                }
-            }
+          async function fetchUsers() {
+    try {
+        const res = await fetch(API.users, { credentials: 'include' });
+        if (!res.ok) throw new Error();
+
+        const data = await res.json();
+        allUsers = Array.isArray(data) ? data : [];
+    } catch (error) {
+        console.error('Failed to load users:', error);
+        allUsers = [];
+    }
+
+    renderUsers();
+}
 
             async function deleteUser(id) {
                 try {
@@ -2876,7 +2731,8 @@
 
                 let html = '';
                 filtered.forEach(o => {
-                    const items = JSON.parse(o.items || '[]');
+                    const items = parseOrderItems(o.items);
+           
                     const itemSummary = items.map(i => `${i.name} ×${i.qty}`).join(', ').substring(0, 40) + (items
                     .length > 3 ? '…' : '');
                     html += `
@@ -3174,7 +3030,8 @@
                 const topSellingList = $('#topSellingList');
                 const itemCounts = {};
                 allOrders.forEach(o => {
-                    const items = JSON.parse(o.items || '[]');
+                    const items = parseOrderItems(o.items);
+                    
                     items.forEach(item => {
                         itemCounts[item.name] = (itemCounts[item.name] || 0) + item.qty;
                     });
@@ -3422,7 +3279,7 @@
             // ---- Order Detail Modal ----
             function openOrderDetail(order) {
                 orderDetailTitle.textContent = `Order #${order.id}`;
-                const items = JSON.parse(order.items || '[]');
+               const items = parseOrderItems(order.items);
                 const total = order.total || items.reduce((s, i) => s + i.price * i.qty, 0);
                 orderDetailGrid.innerHTML = `
                     <div class="detail-item"><span class="label">Customer</span><div class="value">${escHtml(order.customer || '—')}</div></div>
@@ -3730,18 +3587,7 @@
                 }
             });
 
-            // ---- Init ----
-            function initAdminPanel() {
-                generateMockData();
-                fetchProducts();
-                updateStats();
-                fetchOrders();
-                fetchPayments();
-                fetchUsers();
-                renderDeliveries();
-                renderDebts();
-                renderNotifications();
-                navigateTo('dashboard');
+          
 
                 setInterval(() => {
                     fetchProducts();

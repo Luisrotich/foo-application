@@ -25,13 +25,11 @@ from werkzeug.utils import secure_filename
 app = Flask(__name__)
 
 app.config.update(
-    SECRET_KEY=os.environ.get('SECRET_KEY', 'local-development-secret'),
+    SECRET_KEY=os.environ['SECRET_KEY'],
     SESSION_COOKIE_SECURE=True,
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SAMESITE='Lax',
-    PERMANENT_SESSION_LIFETIME=timedelta(days=30),
-    UPLOAD_FOLDER='static/uploads',
-    MAX_CONTENT_LENGTH=16 * 1024 * 1024
+    PERMANENT_SESSION_LIFETIME=timedelta(days=30)
 )
 # Ensure folders exist
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
