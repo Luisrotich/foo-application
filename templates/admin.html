@@ -3587,21 +3587,6 @@ async function fetchPayments() {
                     if (deliveryModal.classList.contains('show')) closeDeliveryModal();
                 }
             });
-
-          
-
-                setInterval(() => {
-                    fetchProducts();
-                    updateStats();
-                    fetchOrders();
-                    fetchPayments();
-                    fetchUsers();
-                    updateActivity();
-                    renderInventoryAlerts();
-                }, 30000);
-
-                console.log('✅ Admin dashboard initialized with all features.');
-            }
 function initAdminPanel() {
     hideLogin();
     navigateTo('dashboard');
@@ -3617,9 +3602,24 @@ function initAdminPanel() {
     updateStats();
     updateActivity();
     renderInventoryAlerts();
-}
-            checkSession();
 
+    setInterval(() => {
+        fetchProducts();
+        updateStats();
+        fetchOrders();
+        fetchPayments();
+        fetchUsers();
+        updateActivity();
+        renderInventoryAlerts();
+    }, 30000);
+
+    console.log('Admin dashboard initialized.');
+}
+
+checkSession();
+          
+
+          
         })();
     </script>
 
