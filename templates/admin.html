@@ -2247,12 +2247,14 @@
                 toastTimeout = setTimeout(() => toast.classList.remove('show'), duration);
             }
 
-          function formatPrice(amount) {
+   function formatPrice(amount) {
     return `KES ${Number(amount || 0).toLocaleString('en-KE', {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
     })}`;
-}function parseOrderItems(items) {
+}
+
+function parseOrderItems(items) {
     if (Array.isArray(items)) return items;
 
     try {
@@ -2262,7 +2264,6 @@
         return [];
     }
 }
-
             function escHtml(str) {
                 if (!str) return '';
                 const div = document.createElement('div');
@@ -3601,7 +3602,22 @@ async function fetchPayments() {
 
                 console.log('✅ Admin dashboard initialized with all features.');
             }
+function initAdminPanel() {
+    hideLogin();
+    navigateTo('dashboard');
 
+    fetchProducts();
+    fetchOrders();
+    fetchPayments();
+    fetchUsers();
+
+    renderDeliveries();
+    renderDebts();
+    renderNotifications();
+    updateStats();
+    updateActivity();
+    renderInventoryAlerts();
+}
             checkSession();
 
         })();
