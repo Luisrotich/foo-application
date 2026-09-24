@@ -1595,7 +1595,25 @@
         }
         .inventory-alert .alert-stock.warning {
             color: #f59e0b;
-        }
+        }.empty-state {
+    min-height: 180px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.loading-row {
+    text-align: center;
+    padding: 2rem;
+    color: #94a3b8;
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
     </style>
 </head>
 <body>
@@ -2203,22 +2221,20 @@
             const recentActivity = $('#recentActivity');
 
             // ---- state ----
-            let products = [];
-            let orders = [];
-            let payments = [];
-            let users = [];
-            let deliveries = [];
-            let debts = [];
-            let notifications = [];
-            let editingProductId = null;
-            let editingDebtId = null;
-            let editingDeliveryId = null;
-            let imageDataUrl = null;
-            let toastTimeout = null;
-            let currentUsername = '';
-            let allOrders = [];
-            let allPayments = [];
-            let allUsers = [];
+let products = [];
+let deliveries = [];
+let debts = [];
+let notifications = [];
+let editingProductId = null;
+let editingDebtId = null;
+let editingDeliveryId = null;
+let imageDataUrl = null;
+let toastTimeout = null;
+let currentUsername = '';
+let allOrders = [];
+let allPayments = [];
+let allUsers = [];
+let refreshTimer = null;
 
             // ---- API ----
             const API = {
@@ -2246,7 +2262,18 @@
                 clearTimeout(toastTimeout);
                 toastTimeout = setTimeout(() => toast.classList.remove('show'), duration);
             }
+function setButtonLoading(button, loading, text = 'Loading...') {
+    if (!button) return;
 
+    if (loading) {
+        button.dataset.originalText = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = `<span class="spinner"></span> ${text}`;
+    } else {
+        button.disabled = false;
+        button.innerHTML = button.dataset.originalText || 'Refresh';
+    }
+}
    function formatPrice(amount) {
     return `KES ${Number(amount || 0).toLocaleString('en-KE', {
         minimumFractionDigits: 2,
@@ -2409,11 +2436,16 @@ function parseOrderItems(items) {
                         alerts.push({ product: p, type: 'warning', msg: `🟡 ${p.name} has only ${p.stock} remaining` });
                     }
                 });
-                if (alerts.length === 0) {
-                    inventoryAlerts.innerHTML =
-                        `<div class="alert-banner"><span class="alert-icon success"><i class="fas fa-check-circle"></i></span><span class="alert-text">All products are well stocked ✅</span></div>`;
-                    return;
-                }
+              if (alerts.length === 0) {
+    inventoryAlerts.innerHTML =
+        `<div class="alert-banner">
+            <span class="alert-icon success"><i class="fas fa-check-circle"></i></span>
+            <span class="alert-text">All products are well stocked ✅</span>
+        </div>`;
+
+    updateNotifBadge();
+    return;
+}
                 let html = '';
                 alerts.forEach(a => {
                     html += `
@@ -3539,19 +3571,62 @@ async function fetchPayments() {
             debtSearch.addEventListener('input', renderDebts);
             userSearch.addEventListener('input', renderUsers);
             userDateFrom.addEventListener('change', renderUsers);
+refreshBtn.addEventListener('click', async () => {
+    setButtonLoading(refreshBtn, true, 'Loading');
 
-            refreshBtn.addEventListener('click', () => { fetchProducts();
-                showToast('Products refreshed!', 'success', 1500); });
-            refreshOrdersBtn.addEventListener('click', () => { fetchOrders();
-                showToast('Orders refreshed!', 'success', 1500); });
-            refreshPaymentsBtn.addEventListener('click', () => { fetchPayments();
-                showToast('Payments refreshed!', 'success', 1500); });
-            refreshUsersBtn.addEventListener('click', () => { fetchUsers();
-                showToast('Users refreshed!', 'success', 1500); });
-            refreshDeliveriesBtn.addEventListener('click', () => { renderDeliveries();
-                showToast('Deliveries refreshed!', 'success', 1500); });
-            refreshDebtsBtn.addEventListener('click', () => { renderDebts();
-                showToast('Debts refreshed!', 'success', 1500); });
+    try {
+        await fetchProducts();
+        showToast('Products refreshed successfully.');
+    } finally {
+        setButtonLoading(refreshBtn, false);
+    }
+});
+            refreshOrdersBtn.addEventListener('click', async () => {
+                setButtonLoading(refreshOrdersBtn, true, 'Loading');
+                try {
+                    await fetchOrders();
+                    showToast('Orders refreshed successfully.');
+                } finally {
+                    setButtonLoading(refreshOrdersBtn, false);
+                }
+            });
+            refreshPaymentsBtn.addEventListener('click', async () => {
+                setButtonLoading(refreshPaymentsBtn, true, 'Loading');
+                try {
+                    await fetchPayments();
+                    showToast('Payments refreshed successfully.');
+                } finally {
+                    setButtonLoading(refreshPaymentsBtn, false);
+                }
+            });
+            refreshUsersBtn.addEventListener('click', async () => {
+                setButtonLoading(refreshUsersBtn, true, 'Loading');
+                try {
+                    await fetchUsers();
+                    showToast('Users refreshed successfully.');
+                } finally {
+                    setButtonLoading(refreshUsersBtn, false);
+                }
+            });
+                
+            refreshDeliveriesBtn.addEventListener('click', async () => {
+                setButtonLoading(refreshDeliveriesBtn, true, 'Loading');
+                try {
+                    await renderDeliveries();
+                    showToast('Deliveries refreshed successfully.');
+                } finally {
+                    setButtonLoading(refreshDeliveriesBtn, false);
+                }
+            });
+            refreshDebtsBtn.addEventListener('click', async () => {
+                setButtonLoading(refreshDebtsBtn, true, 'Loading');
+                try {
+                    await renderDebts();
+                    showToast('Debts refreshed successfully.');
+                } finally {
+                    setButtonLoading(refreshDebtsBtn, false);
+                }
+            });
 
             addProductBtn.addEventListener('click', openAddModal);
             addDeliveryBtn.addEventListener('click', openAddDelivery);
@@ -3603,15 +3678,17 @@ function initAdminPanel() {
     updateActivity();
     renderInventoryAlerts();
 
-    setInterval(() => {
-        fetchProducts();
-        updateStats();
-        fetchOrders();
-        fetchPayments();
-        fetchUsers();
-        updateActivity();
-        renderInventoryAlerts();
-    }, 30000);
+  if (refreshTimer) clearInterval(refreshTimer);
+
+refreshTimer = setInterval(() => {
+    fetchProducts();
+    fetchOrders();
+    fetchPayments();
+    fetchUsers();
+    updateStats();
+    updateActivity();
+    renderInventoryAlerts();
+}, 30000);
 
     console.log('Admin dashboard initialized.');
 }
