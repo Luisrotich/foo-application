@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#F97316" />
+    <meta name="theme-color" content="#ffffff" />
     <link rel="manifest" href="/manifest.json" />
     <link rel="apple-touch-icon" href="/static/favicon.jpeg" />
     <title>Fresh Ready Foods</title>
@@ -1950,6 +1950,204 @@ body {
     overflow-y: auto;
     overscroll-behavior: contain;
 }
+/* Modern cart panels: desktop and mobile */
+
+.cart-panel {
+    background: #ffffff;
+    color: #172033;
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    box-shadow: 0 20px 60px rgba(15, 23, 42, 0.22);
+    isolation: isolate;
+}
+
+.cart-panel.desktop {
+    width: min(430px, 94vw);
+    border-radius: 24px 0 0 24px;
+}
+
+.cart-panel.mobile {
+    max-height: min(720px, 94vh);
+    border-radius: 26px 26px 0 0;
+}
+
+.cart-panel .cart-handle {
+    width: 46px;
+    height: 5px;
+    margin: 10px auto 2px;
+    background: #cbd5e1;
+}
+
+.cart-panel .cart-header {
+    min-height: 68px;
+    padding: 1rem 1.25rem;
+    background: linear-gradient(135deg, #fff7ed, #ffffff);
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.cart-panel .cart-header h2 {
+    color: #172033;
+    font-size: 1.15rem;
+    font-weight: 800;
+}
+
+.cart-panel .cart-header .cart-back {
+    width: 40px;
+    height: 40px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    color: #475569;
+}
+
+.cart-panel .cart-header .cart-back:hover {
+    background: #f97316;
+    border-color: #f97316;
+    color: #ffffff;
+}
+
+.cart-panel .cart-header .cart-clear {
+    padding: 0.45rem 0.8rem;
+    color: #ef4444;
+    background: #fef2f2;
+}
+
+.cart-panel .cart-header .cart-clear:hover {
+    background: #fee2e2;
+}
+
+.cart-panel .cart-list {
+    padding: 0.75rem 1.25rem;
+    background: #f8fafc;
+}
+
+.cart-panel .cart-item {
+    gap: 0.7rem;
+    margin-bottom: 0.65rem;
+    padding: 0.75rem;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+}
+
+.cart-panel .cart-item:last-child {
+    margin-bottom: 0;
+}
+
+.cart-panel .cart-item .item-img {
+    width: 58px;
+    height: 58px;
+    border-radius: 14px;
+    background: #fff7ed;
+    color: #f97316;
+}
+
+.cart-panel .cart-item .item-info .name {
+    color: #172033;
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.cart-panel .cart-item .item-info .price {
+    margin-top: 0.2rem;
+    color: #f97316;
+    font-weight: 800;
+}
+
+.cart-panel .cart-item .item-actions .qty-btn {
+    width: 30px;
+    height: 30px;
+    background: #fff7ed;
+    color: #ea580c;
+    font-weight: 800;
+}
+
+.cart-panel .cart-item .item-actions .qty-btn:hover {
+    background: #f97316;
+    color: #ffffff;
+}
+
+.cart-panel .cart-item .item-actions .qty-num {
+    min-width: 1.5rem;
+    color: #172033;
+}
+
+.cart-panel .cart-footer {
+    gap: 0.55rem;
+    padding: 1rem 1.25rem 1.25rem;
+    background: #ffffff;
+    border-top: 1px solid #e2e8f0;
+}
+
+.cart-panel .cart-footer .cart-total-row {
+    color: #64748b;
+}
+
+.cart-panel .cart-footer .cart-total-row.grand {
+    margin-top: 0.25rem;
+    padding-top: 0.75rem;
+    color: #172033;
+    font-size: 1.1rem;
+}
+
+.cart-panel .cart-footer .cart-total-row.grand .amount {
+    color: #f97316;
+    font-size: 1.2rem;
+}
+
+.cart-panel .cart-footer .checkout-btn {
+    min-height: 50px;
+    margin-top: 0.6rem;
+    background: linear-gradient(135deg, #f97316, #ea580c);
+    border-radius: 14px;
+    box-shadow: 0 8px 20px rgba(249, 115, 22, 0.25);
+}
+
+.cart-panel .cart-footer .checkout-btn:hover {
+    background: linear-gradient(135deg, #ea580c, #c2410c);
+    transform: translateY(-1px);
+}
+
+.cart-panel .cart-footer .checkout-btn:disabled {
+    background: #cbd5e1;
+    box-shadow: none;
+}
+
+.cart-panel .cart-list .empty-cart {
+    padding: 4rem 1rem;
+}
+
+.cart-panel .cart-list .empty-cart i {
+    color: #fb923c;
+    font-size: 3.5rem;
+}
+
+@media (max-width: 899px) {
+    .cart-panel.mobile {
+        width: 100%;
+        max-height: 94vh;
+    }
+
+    .cart-panel.mobile .cart-header {
+        padding: 0.85rem 1rem;
+    }
+
+    .cart-panel.mobile .cart-list {
+        padding: 0.7rem 1rem;
+    }
+
+    .cart-panel.mobile .cart-footer {
+        padding: 0.85rem 1rem 1rem;
+    }
+}
+
+@media (min-width: 900px) {
+    .cart-panel.desktop {
+        top: 1rem;
+        right: 1rem;
+        bottom: 1rem;
+        height: auto;
+    }
+}
     </style>
 </head>
 <body>
@@ -2268,9 +2466,9 @@ body {
         </div>
         <div class="cart-list" id="cartListDesktop"></div>
         <div class="cart-footer" id="cartFooterDesktop">
-            <div class="cart-total-row"><span>Subtotal</span><span class="amount" id="cartSubtotalDesktop">$0.00</span></div>
-            <div class="cart-total-row"><span>Tax (10%)</span><span class="amount" id="cartTaxDesktop">$0.00</span></div>
-            <div class="cart-total-row grand"><span>Total</span><span class="amount" id="cartTotalDesktop">$0.00</span></div>
+            <div class="cart-total-row"><span>Subtotal</span><span class="amount" id="cartSubtotalDesktop">KES 0.00</span></div>
+            <div class="cart-total-row"><span>Tax (10%)</span><span class="amount" id="cartTaxDesktop">KES 0.00</span></div>
+            <div class="cart-total-row grand"><span>Total</span><span class="amount" id="cartTotalDesktop">KES 0.00</span></div>
             <button class="checkout-btn" id="cartCheckoutDesktop"><i class="fas fa-mobile-alt"></i> Pay with M‑PESA</button>
         </div>
     </div>
