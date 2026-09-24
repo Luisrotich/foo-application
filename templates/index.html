@@ -1051,7 +1051,46 @@
             opacity: 0.5;
             cursor: not-allowed;
         }
+.cart-panel {
+    display: flex !important;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 2000;
+}
 
+.cart-panel.desktop {
+    height: 100dvh;
+}
+
+.cart-panel.mobile {
+    height: min(92dvh, 720px);
+    max-height: 92dvh;
+}
+
+.cart-panel .cart-list {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.cart-panel .cart-footer {
+    display: flex !important;
+    flex: 0 0 auto;
+    visibility: visible !important;
+    min-height: 150px;
+    background: #ffffff;
+    position: relative;
+    z-index: 3;
+}
+
+.cart-panel .checkout-btn {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 100%;
+    min-height: 52px;
+    flex-shrink: 0;
+}
         /* ===== MODAL OVERLAY ===== */
         .modal-overlay {
             display: none;
@@ -2460,7 +2499,7 @@ body {
         </div>
         <div class="cart-list" id="cartListDesktop"></div>
         <div class="cart-footer" id="cartFooterDesktop">
-            <div class="cart-total-row"><span>Subtotal</span><span class="amount" id="cartSubtotalDesktop">$0.00</span></div>
+            <div class="cart-total-row"><span>Subtotal</span><span class="amount" id="cartSubtotalDesktop">KES.00</span></div>
             <div class="cart-total-row"><span>Tax (10%)</span><span class="amount" id="cartTaxDesktop">$0.00</span></div>
             <div class="cart-total-row grand"><span>Total</span><span class="amount" id="cartTotalDesktop">$0.00</span></div>
             <button class="checkout-btn" id="cartCheckoutDesktop"><i class="fas fa-mobile-alt"></i> Pay with M‑PESA</button>
