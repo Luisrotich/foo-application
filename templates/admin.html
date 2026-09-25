@@ -2345,23 +2345,27 @@ function parseOrderItems(items) {
                 };
                 return map[s] || s;
             }
+async function checkSession() {
+    try {
+        const response = await fetch('/api/user/status', {
+            credentials: 'include'
+        });
 
-            // ---- Auth ----
-            async function checkSession() {
-                try {
-                    const res = await fetch(API.adminStatus, { credentials: 'include' });
-                    if (res.ok) {
-                        const data = await res.json();
-                        currentUsername = data.username || 'Admin';
-                        hideLogin();
-                        initAdminPanel();
-                    } else {
-                        showLogin();
-                    }
-                } catch (e) {
-                    showLogin();
-                }
-            }
+        if (response.ok) {
+            const user = await response.json();
+            currentUser = user;
+            authScreen.classList.add('hidden');
+            app.classList.remove('hidden');
+            await loadProducts();
+            return;
+        }
+    } catch (error) {
+        console.error('Session check failed:', error);
+    }
+
+    app.classList.add('hidden');
+    authScreen.classList.remove('hidden');
+}
 
             function showLogin() {
                 loginOverlay.classList.remove('hidden');

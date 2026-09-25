@@ -2222,6 +2222,15 @@ body {
         font-size: .75rem;
     }
 }
+.auth-screen.checking .auth-container {
+    visibility: hidden;
+}
+
+.auth-screen.checking::after {
+    content: "Loading Fresh Ready Foods...";
+    color: #f97316;
+    font-weight: 600;
+}
     </style>
 </head>
 <body>
@@ -2229,7 +2238,7 @@ body {
     <!-- ============================================================
     AUTH SCREEN
     ============================================================ -->
-    <div class="auth-screen" id="authScreen">
+    <div class="auth-screen checking" id="authScreen">
         <div class="auth-container">
             <div class="auth-brand">
                 <span class="brand-icon"><i class="fas fa-apple-alt"></i></span>
@@ -2901,30 +2910,39 @@ body {
             // ==========================================================
             // AUTH
             // ==========================================================
-            function checkAuth() {
-                return fetch('/api/user/status', { credentials: 'include' })
-                    .then(res => {
-                        if (res.ok) {
-                            return res.json().then(data => {
-                                isLoggedIn = true;
-                                currentUser = data;
-                                authScreen.classList.add('hidden');
-                                app.classList.remove('hidden');
-                                loadCart();
-                                fetchProducts();
-                                // ...existing code...
-                                fetchUserData();
-                                startOrderStatusPolling();
-                                updateUIForUser();
-                                // ...existing code...
-                              
-                                return true;
-                            });
-                        }
-                        return false;
-                    })
-                    .catch(() => false);
-            }
+        async function checkAuth() {
+    try {
+        const response = await fetch('/api/user/status', {
+            credentials: 'include',
+            cache: 'no-store'
+        });
+
+        if (!response.ok) {
+            throw new Error('Not authenticated');
+        }
+
+        const data = await response.json();
+
+        isLoggedIn = true;
+        currentUser = data.user || data;
+
+        authScreen.classList.remove('checking');
+        authScreen.classList.add('hidden');
+        app.classList.remove('hidden');
+
+        loadCart();
+        fetchProducts();
+        fetchUserData();
+        startOrderStatusPolling();
+        updateUIForUser();
+    } catch (error) {
+        isLoggedIn = false;
+        currentUser = null;
+
+        authScreen.classList.remove('checking', 'hidden');
+        app.classList.add('hidden');
+    }
+}
 
             function updateUIForUser() {
                 if (currentUser) {

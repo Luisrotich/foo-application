@@ -27,7 +27,7 @@ app = Flask(__name__)
 
 app.config.update(
     SECRET_KEY=os.environ['SECRET_KEY'],
-    SESSION_COOKIE_SECURE=True,
+    SESSION_COOKIE_SECURE=os.getenv('RENDER') == 'true',
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SAMESITE='Lax',
     PERMANENT_SESSION_LIFETIME=timedelta(days=30),
