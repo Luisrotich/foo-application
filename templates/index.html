@@ -4065,12 +4065,13 @@ function pollPaymentStatus(checkoutId, onComplete, onError) {
 }
 
 function showPaymentSuccess() {
-    mpesaStatus.textContent = '✅ Payment confirmed! Order placed.';
-    mpesaStatus.style.color = '#00840b';
+    mpesaStatus.textContent = ' Payment confirmed! Order placed.';
+    mpesaStatus.style.color = '#00a30e';
     mpesaModal.classList.remove('show');
 
     showToast(
-        'Payment complete! Check the Notifications button for order status.',
+        'Check Order Section For Status',
+        'Thank You!',
         7000
     );
 
@@ -4145,8 +4146,8 @@ const total = items.reduce(
             return response.json();
         })
         .then(data => {
-            mpesaStatus.textContent = '✅ Payment initiated! Check your phone.';
-            mpesaStatus.style.color = '#166534';
+            mpesaStatus.textContent = 'Payment initiated! Check your phone.';
+            mpesaStatus.style.color = '#00b406';
 
             const checkoutId = data.checkoutRequestId || data.checkoutId;
 
