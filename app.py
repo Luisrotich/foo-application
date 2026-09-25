@@ -21,6 +21,7 @@ from datetime import datetime, timedelta
 from flask import Flask, session, request, jsonify, render_template, send_from_directory
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
+from PIL import Image, ImageOps
 
 app = Flask(__name__)
 
@@ -35,6 +36,16 @@ app.config.update(
 )
 # Ensure folders exist
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+def save_compressed_image(uploaded_file):
+    image = Image.open(uploaded_file)
+    image = ImageOps.exif_transpose(image).convert('RGB')
+    image.thumbnail((800, 800), Image.Resampling.LANCZOS)
+
+    filename = f'{uuid.uuid4().hex}.webp'
+    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+
+    image.save(filepath, 'WEBP', quality=78, method=6, optimize=True)
+    return f'/static/uploads/{filename}'
 os.makedirs('templates', exist_ok=True)
 os.makedirs('static', exist_ok=True)
 
@@ -403,24 +414,22 @@ def product_detail(pid):
             return jsonify({'error': 'Admin required'}), 403
         del products[pid]
         return jsonify({'success': True}), 200
-
 @app.route('/api/upload', methods=['POST'])
 def upload_image():
     admin = get_current_admin()
     if not admin:
         return jsonify({'error': 'Admin required'}), 403
-    if 'image' not in request.files:
-        return jsonify({'error': 'No file'}), 400
-    file = request.files['image']
-    if file.filename == '':
+
+    file = request.files.get('image')
+    if not file or not file.filename:
         return jsonify({'error': 'No file selected'}), 400
-    filename = secure_filename(file.filename)
-    ext = filename.rsplit('.', 1)[1].lower() if '.' in filename else ''
-    new_filename = f"{uuid.uuid4().hex}.{ext}"
-    filepath = os.path.join(app.config['UPLOAD_FOLDER'], new_filename)
-    file.save(filepath)
-    url = f"/static/uploads/{new_filename}"
-    return jsonify({'url': url}), 200
+
+    try:
+        url = save_compressed_image(file)
+        return jsonify({'url': url}), 200
+    except Exception:
+        app.logger.exception('Image compression failed')
+        return jsonify({'error': 'Invalid image file'}), 400
 
 # ============================
 # CHECKOUT / ORDER
