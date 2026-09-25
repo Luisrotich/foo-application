@@ -2188,6 +2188,40 @@ body {
     min-height: 52px;
     flex-shrink: 0;
 }
+/* Product modal action buttons */
+#productModal .modal-actions {
+    display: flex;
+    gap: .7rem;
+    margin: .8rem 1.5rem 0;
+}
+
+#productModal .modal-actions .modal-add {
+    flex: 1;
+    width: auto;
+    min-width: 0;
+    margin: 0;
+    padding: .75rem .5rem;
+    font-size: .85rem;
+}
+
+#productModal .modal-actions .favorite-btn {
+    background: #8b5cf6;
+}
+
+#productModal .modal-actions .favorite-btn:hover {
+    background: #7c3aed;
+}
+
+@media (max-width: 600px) {
+    #productModal .modal-actions {
+        margin-left: 1rem;
+        margin-right: 1rem;
+    }
+
+    #productModal .modal-actions .modal-add {
+        font-size: .75rem;
+    }
+}
     </style>
 </head>
 <body>
@@ -2506,9 +2540,9 @@ body {
         </div>
         <div class="cart-list" id="cartListDesktop"></div>
         <div class="cart-footer" id="cartFooterDesktop">
-            <div class="cart-total-row"><span>Subtotal</span><span class="amount" id="cartSubtotalDesktop">$0.00</span></div>
-            <div class="cart-total-row"><span>Tax (10%)</span><span class="amount" id="cartTaxDesktop">$0.00</span></div>
-            <div class="cart-total-row grand"><span>Total</span><span class="amount" id="cartTotalDesktop">$0.00</span></div>
+            <div class="cart-total-row"><span>Subtotal</span><span class="amount" id="cartSubtotalDesktop">KES 0.00</span></div>
+            <div class="cart-total-row"><span>Tax (10%)</span><span class="amount" id="cartTaxDesktop">KES 0.00</span></div>
+            <div class="cart-total-row grand"><span>Total</span><span class="amount" id="cartTotalDesktop">KES 0.00</span></div>
             <button class="checkout-btn" id="cartCheckoutDesktop"><i class="fas fa-mobile-alt"></i> Pay with M‑PESA</button>
         </div>
     </div>
@@ -2522,9 +2556,9 @@ body {
         </div>
         <div class="cart-list" id="cartListMobile"></div>
         <div class="cart-footer" id="cartFooterMobile">
-            <div class="cart-total-row"><span>Subtotal</span><span class="amount" id="cartSubtotalMobile">$0.00</span></div>
-            <div class="cart-total-row"><span>Tax (10%)</span><span class="amount" id="cartTaxMobile">$0.00</span></div>
-            <div class="cart-total-row grand"><span>Total</span><span class="amount" id="cartTotalMobile">$0.00</span></div>
+            <div class="cart-total-row"><span>Subtotal</span><span class="amount" id="cartSubtotalMobile">KES 0.00</span></div>
+            <div class="cart-total-row"><span>Tax (10%)</span><span class="amount" id="cartTaxMobile">KES 0.00</span></div>
+            <div class="cart-total-row grand"><span>Total</span><span class="amount" id="cartTotalMobile">KES 0.00</span></div>
             <button class="checkout-btn" id="cartCheckoutMobile"><i class="fas fa-mobile-alt"></i> Pay with M‑PESA</button>
         </div>
     </div>
@@ -2551,9 +2585,16 @@ body {
                 <span class="qty-num" id="qtyNum">1</span>
                 <button class="qty-btn" id="qtyPlus"><i class="fas fa-plus"></i></button>
             </div>
-            <button class="modal-add" id="modalAdd"><i class="fas fa-cart-plus"></i> Add to Cart</button>
-            <button class="modal-add" style="background:#8b5cf6;margin-top:0.4rem;" id="modalFavBtn"><i class="fas fa-heart"></i> Add to Favorites</button>
-            <div style="margin-top:0.6rem;border-top:1px solid #f1f5f9;padding-top:0.6rem;">
+            <div class="modal-actions">
+    <button class="modal-add" id="modalAdd">
+        <i class="fas fa-cart-plus"></i> Add to Cart
+    </button>
+
+    <button class="modal-add favorite-btn" id="modalFavBtn">
+        <i class="fas fa-heart"></i> Add to Favorites
+    </button>
+</div>
+          <div style="margin-top:0.6rem;border-top:1px solid #f1f5f9;padding-top:0.6rem;">
                 <p style="font-size:0.75rem;font-weight:600;margin-bottom:0.3rem;">Related Products</p>
                 <div style="display:flex;gap:0.4rem;flex-wrap:wrap;" id="relatedProducts"></div>
             </div>
@@ -4070,8 +4111,8 @@ function showPaymentSuccess() {
     mpesaModal.classList.remove('show');
 
     showToast(
-        'Check Order Section For Status',
-        'Thank You!',
+        'Check Orders Section For Status',
+       
         7000
     );
 
