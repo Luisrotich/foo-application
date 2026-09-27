@@ -2728,15 +2728,15 @@ async function fetchPayments() {
 
                 productTableBody.querySelectorAll('.edit').forEach(el => {
                     el.addEventListener('click', () => {
-                        const id = parseInt(el.dataset.id);
-                        const product = products.find(p => p.id === id);
+                        const id = String(el.dataset.id);
+                        const product = products.find(p => String(p.id) === id);
                         if (product) openEditModal(product);
                     });
                 });
                 productTableBody.querySelectorAll('.delete').forEach(el => {
                     el.addEventListener('click', () => {
-                        const id = parseInt(el.dataset.id);
-                        const product = products.find(p => p.id === id);
+                        const id = String(el.dataset.id);
+                        const product = products.find(p => String(p.id) === id);
                         if (product) openDeleteModal(product, 'product');
                     });
                 });
