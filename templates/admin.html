@@ -2788,15 +2788,15 @@ async function fetchPayments() {
 
                 ordersTableBody.querySelectorAll('.view').forEach(el => {
                     el.addEventListener('click', () => {
-                        const id = parseInt(el.dataset.id);
-                        const order = allOrders.find(o => o.id === id);
+                        const id = String(el.dataset.id);
+                        const order = allOrders.find(o => String(o.id) === id);
                         if (order) openOrderDetail(order);
                     });
                 });
                 ordersTableBody.querySelectorAll('.delete').forEach(el => {
                     el.addEventListener('click', () => {
-                        const id = parseInt(el.dataset.id);
-                        const order = allOrders.find(o => o.id === id);
+                        const id = String(el.dataset.id);
+                        const order = allOrders.find(o => String(o.id) === id);
                         if (order) openDeleteModal(order, 'order');
                     });
                 });
@@ -2850,8 +2850,8 @@ async function fetchPayments() {
 
                 paymentsTableBody.querySelectorAll('.delete').forEach(el => {
                     el.addEventListener('click', () => {
-                        const id = parseInt(el.dataset.id);
-                        const payment = allPayments.find(p => p.id === id);
+                        const id = String(el.dataset.id);
+                        const payment = allPayments.find(p => String(p.id) === id);
                         if (payment) openDeleteModal(payment, 'payment');
                     });
                 });
@@ -2990,8 +2990,8 @@ async function fetchPayments() {
 
                 usersTableBody.querySelectorAll('.delete').forEach(el => {
                     el.addEventListener('click', () => {
-                        const id = parseInt(el.dataset.id);
-                        const u = allUsers.find(usr => usr.id === id);
+                        const id = String(el.dataset.id);
+                        const u = allUsers.find(usr => String(usr.id) === id);
                         if (u) openDeleteModal(u, 'user');
                     });
                 });

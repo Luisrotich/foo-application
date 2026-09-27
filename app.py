@@ -1847,17 +1847,24 @@ def stats():
     admin = get_current_admin()
     if not admin:
         return jsonify({'error': 'Admin required'}), 403
-    total_products = len(products)
-    total_orders = len(orders)
-    total_revenue = sum(o['total'] for o in orders.values() if o.get('status') in ['paid', 'delivered', 'completed'])
-    pending_orders = len([o for o in orders.values() if o.get('status') == 'pending'])
-    total_users = len(users)
+
+    row = db.session.execute(
+        text("""
+            SELECT
+                (SELECT COUNT(*) FROM meals WHERE deleted_at IS NULL) AS total_products,
+                (SELECT COUNT(*) FROM orders) AS total_orders,
+                (SELECT COALESCE(SUM(total), 0) FROM orders WHERE status IN ('paid', 'completed', 'delivered')) AS total_revenue,
+                (SELECT COUNT(*) FROM orders WHERE status = 'pending') AS pending_orders,
+                (SELECT COUNT(*) FROM users WHERE deleted_at IS NULL) AS total_users
+        """)
+    ).mappings().first()
+
     return jsonify({
-        'total_products': total_products,
-        'total_orders': total_orders,
-        'total_revenue': total_revenue,
-        'pending_orders': pending_orders,
-        'total_users': total_users
+        'total_products': int(row['total_products'] or 0),
+        'total_orders': int(row['total_orders'] or 0),
+        'total_revenue': float(row['total_revenue'] or 0),
+        'pending_orders': int(row['pending_orders'] or 0),
+        'total_users': int(row['total_users'] or 0)
     }), 200
 
 @app.route('/api/orders', methods=['GET'])
@@ -1865,78 +1872,264 @@ def admin_orders():
     admin = get_current_admin()
     if not admin:
         return jsonify({'error': 'Admin required'}), 403
-    order_list = sorted(orders.values(), key=lambda o: o['created_at'], reverse=True)
+
+    rows = db.session.execute(
+        text("""
+            SELECT
+                o.id,
+                o.customer_id,
+                u.name AS customer,
+                u.phone,
+                o.total,
+                o.status,
+                o.created_at,
+                o.delivery_address,
+                p.id AS payment_id
+            FROM orders o
+            LEFT JOIN users u
+                ON u.id = o.customer_id
+            LEFT JOIN payments p
+                ON p.order_id = o.id
+            ORDER BY o.created_at DESC
+        """)
+    ).mappings().all()
+
+    order_list = []
+
+    for row in rows:
+        items = db.session.execute(
+            text("""
+                SELECT
+                    meal_name AS name,
+                    quantity AS qty,
+                    unit_price,
+                    line_total AS total
+                FROM order_items
+                WHERE order_id = :order_id
+                ORDER BY meal_name
+            """),
+            {'order_id': row['id']}
+        ).mappings().all()
+
+        order_list.append({
+            'id': str(row['id']),
+            'user_id': str(row['customer_id']),
+            'customer': row['customer'] or 'Customer',
+            'phone': row['phone'] or '',
+            'items': [
+                {
+                    'name': item['name'],
+                    'qty': int(item['qty']),
+                    'unit_price': float(item['unit_price']),
+                    'total': float(item['total'])
+                }
+                for item in items
+            ],
+            'total': float(row['total']),
+            'status': row['status'],
+            'created_at': row['created_at'].isoformat() if row['created_at'] else None,
+            'delivery_address': row['delivery_address'] or '',
+            'payment_id': str(row['payment_id']) if row['payment_id'] else None
+        })
+
     return jsonify(order_list), 200
 
-@app.route('/api/orders/<int:oid>/status', methods=['PUT'])
+@app.route('/api/orders/<oid>/status', methods=['PUT'])
 def update_order_status(oid):
     admin = get_current_admin()
     if not admin:
         return jsonify({'error': 'Admin required'}), 403
-    if oid not in orders:
+
+    existing = db.session.execute(
+        text("SELECT id, status FROM orders WHERE id = :oid LIMIT 1"),
+        {'oid': oid}
+    ).mappings().first()
+
+    if not existing:
         return jsonify({'error': 'Order not found'}), 404
     data = request.get_json()
     new_status = data.get('status')
     if new_status not in ['pending', 'preparing', 'dispatched', 'delivered', 'cancelled', 'paid']:
         return jsonify({'error': 'Invalid status'}), 400
-    orders[oid]['status'] = new_status
+
+    db.session.execute(
+        text("UPDATE orders SET status = :status, updated_at = now() WHERE id = :oid"),
+        {'status': new_status, 'oid': oid}
+    )
+    db.session.commit()
     save_notification(f"Order #{oid} status updated to {new_status}", 'order')
     return jsonify({'success': True}), 200
 
-@app.route('/api/orders/<int:oid>', methods=['DELETE'])
+@app.route('/api/orders/<oid>', methods=['DELETE'])
 def delete_order(oid):
     admin = get_current_admin()
     if not admin:
         return jsonify({'error': 'Admin required'}), 403
-    if oid in orders:
-        del orders[oid]
-        return jsonify({'success': True}), 200
-    return jsonify({'error': 'Order not found'}), 404
+
+    existing = db.session.execute(
+        text("SELECT id FROM orders WHERE id = :oid LIMIT 1"),
+        {'oid': oid}
+    ).scalar()
+
+    if not existing:
+        return jsonify({'error': 'Order not found'}), 404
+
+    db.session.execute(
+        text("DELETE FROM payment_events WHERE payment_id IN (SELECT id FROM payments WHERE order_id = :oid)"),
+        {'oid': oid}
+    )
+    db.session.execute(
+        text("DELETE FROM payments WHERE order_id = :oid"),
+        {'oid': oid}
+    )
+    db.session.execute(
+        text("DELETE FROM order_items WHERE order_id = :oid"),
+        {'oid': oid}
+    )
+    db.session.execute(
+        text("DELETE FROM orders WHERE id = :oid"),
+        {'oid': oid}
+    )
+    db.session.commit()
+    return jsonify({'success': True}), 200
 
 @app.route('/api/payments', methods=['GET'])
 def admin_payments():
     admin = get_current_admin()
     if not admin:
         return jsonify({'error': 'Admin required'}), 403
-    payment_list = sorted(payments.values(), key=lambda p: p['created_at'], reverse=True)
-    return jsonify(payment_list), 200
 
-@app.route('/api/payments/<int:pid>', methods=['DELETE'])
+    rows = db.session.execute(
+        text("""
+            SELECT
+                id,
+                order_id,
+                phone,
+                amount,
+                status,
+                checkout_request_id,
+                receipt_number,
+                created_at
+            FROM payments
+            ORDER BY created_at DESC
+        """)
+    ).mappings().all()
+
+    return jsonify([
+        {
+            'id': str(row['id']),
+            'order_id': str(row['order_id']),
+            'phone': row['phone'],
+            'amount': float(row['amount']),
+            'status': row['status'],
+            'transaction_id': row['receipt_number'] or row['checkout_request_id'] or None,
+            'checkout_request_id': row['checkout_request_id'],
+            'created_at': row['created_at'].isoformat() if row['created_at'] else None
+        }
+        for row in rows
+    ]), 200
+
+@app.route('/api/payments/<pid>', methods=['DELETE'])
 def delete_payment(pid):
     admin = get_current_admin()
     if not admin:
         return jsonify({'error': 'Admin required'}), 403
-    if pid in payments:
-        del payments[pid]
-        return jsonify({'success': True}), 200
-    return jsonify({'error': 'Payment not found'}), 404
+
+    existing = db.session.execute(
+        text("SELECT id FROM payments WHERE id = :pid LIMIT 1"),
+        {'pid': pid}
+    ).scalar()
+
+    if not existing:
+        return jsonify({'error': 'Payment not found'}), 404
+
+    db.session.execute(
+        text("DELETE FROM payment_events WHERE payment_id = :pid"),
+        {'pid': pid}
+    )
+    db.session.execute(
+        text("DELETE FROM payments WHERE id = :pid"),
+        {'pid': pid}
+    )
+    db.session.commit()
+    return jsonify({'success': True}), 200
 
 @app.route('/api/users', methods=['GET'])
 def admin_users():
     admin = get_current_admin()
     if not admin:
         return jsonify({'error': 'Admin required'}), 403
-    user_list = []
-    for uid, u in users.items():
-        user_orders = [o for o in orders.values() if o.get('user_id') == uid]
-        order_count = len(user_orders)
-        total_spent = sum(o['total'] for o in user_orders if o.get('status') in ['paid', 'delivered', 'completed'])
-        u_copy = u.copy()
-        u_copy['order_count'] = order_count
-        u_copy['total_spent'] = total_spent
-        u_copy.pop('password_hash', None)
-        user_list.append(u_copy)
-    return jsonify(user_list), 200
 
-@app.route('/api/users/<int:uid>', methods=['DELETE'])
+    rows = db.session.execute(
+        text("""
+            SELECT
+                u.id,
+                u.name,
+                u.email,
+                u.phone,
+                u.address,
+                u.created_at,
+                COUNT(o.id) AS order_count,
+                COALESCE(SUM(CASE WHEN o.status IN ('paid', 'completed', 'delivered') THEN o.total ELSE 0 END), 0) AS total_spent
+            FROM users u
+            LEFT JOIN orders o
+                ON o.customer_id = u.id
+            WHERE u.deleted_at IS NULL
+            GROUP BY u.id, u.name, u.email, u.phone, u.address, u.created_at
+            ORDER BY u.created_at DESC
+        """)
+    ).mappings().all()
+
+    return jsonify([
+        {
+            'id': str(row['id']),
+            'name': row['name'],
+            'email': row['email'],
+            'phone': row['phone'] or '',
+            'address': row['address'] or '',
+            'created_at': row['created_at'].isoformat() if row['created_at'] else None,
+            'order_count': int(row['order_count'] or 0),
+            'total_spent': float(row['total_spent'] or 0)
+        }
+        for row in rows
+    ]), 200
+
+@app.route('/api/users/<uid>', methods=['DELETE'])
 def delete_user(uid):
     admin = get_current_admin()
     if not admin:
         return jsonify({'error': 'Admin required'}), 403
-    if uid in users:
-        del users[uid]
-        return jsonify({'success': True}), 200
-    return jsonify({'error': 'User not found'}), 404
+
+    existing = db.session.execute(
+        text("SELECT id FROM users WHERE id = :uid LIMIT 1"),
+        {'uid': uid}
+    ).scalar()
+
+    if not existing:
+        return jsonify({'error': 'User not found'}), 404
+
+    db.session.execute(
+        text("DELETE FROM payment_events WHERE payment_id IN (SELECT id FROM payments WHERE order_id IN (SELECT id FROM orders WHERE customer_id = :uid))"),
+        {'uid': uid}
+    )
+    db.session.execute(
+        text("DELETE FROM payments WHERE order_id IN (SELECT id FROM orders WHERE customer_id = :uid)"),
+        {'uid': uid}
+    )
+    db.session.execute(
+        text("DELETE FROM order_items WHERE order_id IN (SELECT id FROM orders WHERE customer_id = :uid)"),
+        {'uid': uid}
+    )
+    db.session.execute(
+        text("DELETE FROM orders WHERE customer_id = :uid"),
+        {'uid': uid}
+    )
+    db.session.execute(
+        text("DELETE FROM users WHERE id = :uid"),
+        {'uid': uid}
+    )
+    db.session.commit()
+    return jsonify({'success': True}), 200
 
 @app.route('/api/deliveries', methods=['GET', 'POST'])
 def deliveries_route():
