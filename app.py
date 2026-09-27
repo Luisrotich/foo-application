@@ -211,34 +211,47 @@ def user_login():
 def user_logout():
     session.pop('user_id', None)
     return jsonify({'success': True}), 200
-
 @app.route('/api/signup', methods=['POST'])
 def signup():
-    global user_id_counter
     data = request.get_json()
+
     name = data.get('name')
     email = data.get('email')
     password = data.get('password')
+
     if not name or not email or not password:
         return jsonify({'error': 'All fields required'}), 400
-    for user in users.values():
-        if user['email'] == email:
-            return jsonify({'error': 'Email already registered'}), 400
-    hashed = generate_password_hash(password)
-    uid = user_id_counter
-    user_id_counter += 1
-    users[uid] = {
-        'id': uid,
-        'name': name,
-        'email': email,
-        'password_hash': hashed,
-        'phone': '',
-        'address': '',
-        'created_at': datetime.now().isoformat(),
-        'favorites': [],
-        'addresses': []
-    }
-    return jsonify({'success': True, 'name': name}), 201
+
+    existing = db.session.execute(
+        db.text("SELECT id FROM users WHERE email = :email"),
+        {"email": email}
+    ).first()
+
+    if existing:
+        return jsonify({'error': 'Email already registered'}), 400
+
+    password_hash = generate_password_hash(password)
+
+    db.session.execute(
+        db.text("""
+            INSERT INTO users
+            (name, email, password_hash, role, status)
+            VALUES
+            (:name, :email, :password_hash, 'customer', 'active')
+        """),
+        {
+            "name": name,
+            "email": email,
+            "password_hash": password_hash
+        }
+    )
+
+    db.session.commit()
+
+    return jsonify({
+        "success": True,
+        "name": name
+    }), 201
 
 @app.route('/api/user/profile', methods=['GET', 'PUT'])
 def user_profile():
