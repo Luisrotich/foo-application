@@ -24,7 +24,8 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from PIL import Image, ImageOps
-
+import cloudinary
+import cloudinary.uploader
 
 app = Flask(__name__)
 db = SQLAlchemy()
@@ -50,23 +51,43 @@ app.config.update(
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SAMESITE='Lax',
     PERMANENT_SESSION_LIFETIME=timedelta(days=30),
-    UPLOAD_FOLDER=os.path.join(app.root_path, 'static', 'uploads'),
     MAX_CONTENT_LENGTH=16 * 1024 * 1024
 )
-# Ensure folders exist
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+# Cloudinary configuration
+cloudinary.config(
+    cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME'),
+    api_key=os.getenv('CLOUDINARY_API_KEY'),
+    api_secret=os.getenv('CLOUDINARY_API_SECRET'),
+    secure=True
+)
+
 def save_compressed_image(uploaded_file):
     image = Image.open(uploaded_file)
     image = ImageOps.exif_transpose(image).convert('RGB')
     image.thumbnail((800, 800), Image.Resampling.LANCZOS)
 
-    filename = f'{uuid.uuid4().hex}.webp'
-    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    from io import BytesIO
 
-    image.save(filepath, 'WEBP', quality=78, method=6, optimize=True)
-    return f'/static/uploads/{filename}'
-os.makedirs('templates', exist_ok=True)
-os.makedirs('static', exist_ok=True)
+    buffer = BytesIO()
+    image.save(
+        buffer,
+        format='WEBP',
+        quality=78,
+        method=6,
+        optimize=True
+    )
+
+    buffer.seek(0)
+
+    result = cloudinary.uploader.upload(
+        buffer,
+        folder='waterfront-kitchen/meals',
+        resource_type='image',
+        format='webp'
+    )
+
+    return result['secure_url']
 
 # ============================
 # DATA STORES (in‑memory)
