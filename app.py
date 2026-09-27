@@ -1119,6 +1119,7 @@ def checkout():
 
     data = request.get_json(silent=True) or {}
 
+    note = data.get('note', '')
     items = data.get('items') or []
     phone = str(data.get('phone') or '').strip()
     delivery = str(
