@@ -1497,7 +1497,8 @@ def checkout_status():
                     order_id,
                     status,
                     checkout_request_id,
-                    receipt_number
+                    receipt_number,
+                    provider_payload
                 FROM payments
                 WHERE checkout_request_id = :checkout_id
                 LIMIT 1
@@ -1519,15 +1520,28 @@ def checkout_status():
                 'paymentId': str(payment['id'])
             }), 200
 
+        previous_payload = payment['provider_payload'] or {}
+        if isinstance(previous_payload, str):
+            try:
+                previous_payload = json.loads(previous_payload)
+            except ValueError:
+                previous_payload = {}
+
+        if str(previous_payload.get('ResultCode')) == '4999':
+            return jsonify({
+                'status': 'pending',
+                'paymentId': str(payment['id'])
+            }), 200
+
         # -----------------------------------------------------
         # Ask Safaricom for current payment status.
         # -----------------------------------------------------
         try:
             result = query_mpesa_status(checkout_id)
 
-            result_code = result.get('ResultCode')
+            result_code = str(result.get('ResultCode'))
 
-            if str(result_code) == '0':
+            if result_code == '0':
                 metadata = (
                     result.get('CallbackMetadata', {}).get('Item', [])
                 )
@@ -1574,7 +1588,27 @@ def checkout_status():
 
                 current_status = 'completed'
 
-            elif str(result_code) in (
+            elif result_code == '4999':
+                db.session.execute(
+                    text("""
+                        UPDATE payments
+                        SET provider_payload = :payload
+                        WHERE id = :payment_id
+                          AND status = 'pending'
+                    """),
+                    {
+                        'payload': json.dumps(result),
+                        'payment_id': str(payment['id'])
+                    }
+                )
+                db.session.commit()
+
+                return jsonify({
+                    'status': 'pending',
+                    'paymentId': str(payment['id'])
+                }), 200
+
+            elif result_code in (
                 '1032',
                 '1037',
                 '1',
