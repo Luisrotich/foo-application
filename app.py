@@ -800,32 +800,22 @@ def products_list():
             'inventory'
         )
 
-        row = db.session.execute(
-            text("""
-                SELECT
-                    m.id,
-                    m.name,
-                    c.name AS category,
-                    m.price,
-                    m.stock,
-                    m.discount,
-                    m.prep_time,
-                    m.rating,
-                    m.featured,
-                    m.description,
-                    m.image_url,
-                    m.image_icon,
-                    m.is_available,
-                    m.sort_order
-                FROM meals m
-                JOIN categories c
-                    ON c.id = m.category_id
-                WHERE m.id = :product_id
-            """),
-            {'product_id': product_id}
-        ).mappings().first()
-
-        return jsonify(product_to_json(row)), 201
+        return jsonify({
+            'id': str(product_id),
+            'name': data.get('name', ''),
+            'category': category_name,
+            'price': float(data.get('price', 0)),
+            'stock': int(data.get('stock', 0)),
+            'discount': float(data.get('discount', 0)),
+            'prep_time': int(data.get('prep_time', 0)),
+            'rating': float(data.get('rating', 0)),
+            'featured': int(data.get('featured', 0)),
+            'description': data.get('description', ''),
+            'image': data.get('image', ''),
+            'image_icon': data.get('image_icon', 'fa-apple-alt'),
+            'available': int(data.get('available', 1)),
+            'sort_order': int(data.get('sort_order', 0))
+        }), 201
 
     except Exception as e:
         db.session.rollback()
@@ -1987,32 +1977,37 @@ def delete_order(oid):
     if not admin:
         return jsonify({'error': 'Admin required'}), 403
 
-    existing = db.session.execute(
-        text("SELECT id FROM orders WHERE id = :oid LIMIT 1"),
-        {'oid': oid}
-    ).scalar()
+    try:
+        existing = db.session.execute(
+            text("SELECT id FROM orders WHERE id = :oid LIMIT 1"),
+            {'oid': oid}
+        ).scalar()
 
-    if not existing:
-        return jsonify({'error': 'Order not found'}), 404
+        if not existing:
+            return jsonify({'error': 'Order not found'}), 404
 
-    db.session.execute(
-        text("DELETE FROM payment_events WHERE payment_id IN (SELECT id FROM payments WHERE order_id = :oid)"),
-        {'oid': oid}
-    )
-    db.session.execute(
-        text("DELETE FROM payments WHERE order_id = :oid"),
-        {'oid': oid}
-    )
-    db.session.execute(
-        text("DELETE FROM order_items WHERE order_id = :oid"),
-        {'oid': oid}
-    )
-    db.session.execute(
-        text("DELETE FROM orders WHERE id = :oid"),
-        {'oid': oid}
-    )
-    db.session.commit()
-    return jsonify({'success': True}), 200
+        db.session.execute(
+            text("DELETE FROM payment_events WHERE payment_id IN (SELECT id FROM payments WHERE order_id = :oid)"),
+            {'oid': oid}
+        )
+        db.session.execute(
+            text("DELETE FROM payments WHERE order_id = :oid"),
+            {'oid': oid}
+        )
+        db.session.execute(
+            text("DELETE FROM order_items WHERE order_id = :oid"),
+            {'oid': oid}
+        )
+        db.session.execute(
+            text("DELETE FROM orders WHERE id = :oid"),
+            {'oid': oid}
+        )
+        db.session.commit()
+        return jsonify({'success': True}), 200
+    except Exception as e:
+        db.session.rollback()
+        print('Order DELETE database error:', e)
+        return jsonify({'error': 'Unable to delete order'}), 500
 
 @app.route('/api/payments', methods=['GET'])
 def admin_payments():
@@ -2056,24 +2051,29 @@ def delete_payment(pid):
     if not admin:
         return jsonify({'error': 'Admin required'}), 403
 
-    existing = db.session.execute(
-        text("SELECT id FROM payments WHERE id = :pid LIMIT 1"),
-        {'pid': pid}
-    ).scalar()
+    try:
+        existing = db.session.execute(
+            text("SELECT id FROM payments WHERE id = :pid LIMIT 1"),
+            {'pid': pid}
+        ).scalar()
 
-    if not existing:
-        return jsonify({'error': 'Payment not found'}), 404
+        if not existing:
+            return jsonify({'error': 'Payment not found'}), 404
 
-    db.session.execute(
-        text("DELETE FROM payment_events WHERE payment_id = :pid"),
-        {'pid': pid}
-    )
-    db.session.execute(
-        text("DELETE FROM payments WHERE id = :pid"),
-        {'pid': pid}
-    )
-    db.session.commit()
-    return jsonify({'success': True}), 200
+        db.session.execute(
+            text("DELETE FROM payment_events WHERE payment_id = :pid"),
+            {'pid': pid}
+        )
+        db.session.execute(
+            text("DELETE FROM payments WHERE id = :pid"),
+            {'pid': pid}
+        )
+        db.session.commit()
+        return jsonify({'success': True}), 200
+    except Exception as e:
+        db.session.rollback()
+        print('Payment DELETE database error:', e)
+        return jsonify({'error': 'Unable to delete payment'}), 500
 
 @app.route('/api/users', methods=['GET'])
 def admin_users():
@@ -2121,36 +2121,26 @@ def delete_user(uid):
     if not admin:
         return jsonify({'error': 'Admin required'}), 403
 
-    existing = db.session.execute(
-        text("SELECT id FROM users WHERE id = :uid LIMIT 1"),
-        {'uid': uid}
-    ).scalar()
+    try:
+        result = db.session.execute(
+            text("""
+                UPDATE users
+                SET status = 'suspended', deleted_at = now()
+                WHERE id = :uid
+                  AND deleted_at IS NULL
+            """),
+            {'uid': uid}
+        )
 
-    if not existing:
-        return jsonify({'error': 'User not found'}), 404
+        if result.rowcount == 0:
+            return jsonify({'error': 'User not found'}), 404
 
-    db.session.execute(
-        text("DELETE FROM payment_events WHERE payment_id IN (SELECT id FROM payments WHERE order_id IN (SELECT id FROM orders WHERE customer_id = :uid))"),
-        {'uid': uid}
-    )
-    db.session.execute(
-        text("DELETE FROM payments WHERE order_id IN (SELECT id FROM orders WHERE customer_id = :uid)"),
-        {'uid': uid}
-    )
-    db.session.execute(
-        text("DELETE FROM order_items WHERE order_id IN (SELECT id FROM orders WHERE customer_id = :uid)"),
-        {'uid': uid}
-    )
-    db.session.execute(
-        text("DELETE FROM orders WHERE customer_id = :uid"),
-        {'uid': uid}
-    )
-    db.session.execute(
-        text("DELETE FROM users WHERE id = :uid"),
-        {'uid': uid}
-    )
-    db.session.commit()
-    return jsonify({'success': True}), 200
+        db.session.commit()
+        return jsonify({'success': True}), 200
+    except Exception as e:
+        db.session.rollback()
+        print('User DELETE database error:', e)
+        return jsonify({'error': 'Unable to delete user'}), 500
 
 @app.route('/api/deliveries', methods=['GET', 'POST'])
 def deliveries_route():

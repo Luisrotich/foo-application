@@ -2489,40 +2489,52 @@ async function checkSession() {
             async function saveProduct(productData, id = null) {
                 const url = id ? `${API.products}/${id}` : API.products;
                 const method = id ? 'PUT' : 'POST';
+                setButtonLoading(modalSubmit, true, id ? 'Updating...' : 'Saving...');
                 try {
                     const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(productData), credentials: 'include' });
-                    if (!res.ok) throw new Error();
-                    await fetchProducts();
-                    updateStats();
-                    showToast(id ? 'Product updated' : 'Product added');
-                } catch (e) {
-                    // Fallback: update local
+                    const result = await res.json();
+                    if (!res.ok) throw new Error(result.error || `HTTP ${res.status}`);
+                    const savedProduct = result;
                     if (id) {
-                        const idx = products.findIndex(p => p.id === id);
-                        if (idx > -1) products[idx] = { ...products[idx], ...productData };
+                        const index = products.findIndex(product => String(product.id) === String(id));
+                        if (index !== -1) products[index] = savedProduct;
                     } else {
-                        productData.id = products.length + 1;
-                        products.push(productData);
+                        products.unshift(savedProduct);
                     }
                     renderProducts();
                     renderInventoryAlerts();
-                    showToast(id ? 'Product updated (local)' : 'Product added (local)');
+                    updateStats();
+                    showToast(id ? 'Product updated' : 'Product added');
+                    return true;
+                } catch (e) {
+                    console.error('Failed to save product:', e);
+                    showToast(e.message || 'Unable to save product', 'error');
+                    return false;
+                } finally {
+                    setButtonLoading(modalSubmit, false);
                 }
+            }
+
+            async function deleteFromApi(url) {
+                const res = await fetch(url, { method: 'DELETE', credentials: 'include' });
+                const result = await res.json().catch(() => ({}));
+                if (!res.ok) throw new Error(result.error || `HTTP ${res.status}`);
             }
 
             async function deleteProduct(id) {
                 try {
-                    const res = await fetch(`${API.products}/${id}`, { method: 'DELETE', credentials: 'include' });
-                    if (!res.ok) throw new Error();
-                    await fetchProducts();
-                    updateStats();
-                    showToast('Product deleted');
-                } catch (e) {
-                    products = products.filter(p => p.id !== id);
+                    await deleteFromApi(`${API.products}/${id}`);
+                    products = products.filter(product => String(product.id) !== String(id));
                     renderProducts();
                     renderInventoryAlerts();
-                    showToast('Product deleted (local)');
+                    updateStats();
+                    showToast('Product deleted');
+                    return true;
+                } catch (e) {
+                    console.error('Failed to delete product:', e);
+                    showToast(e.message || 'Unable to delete product', 'error');
+                    return false;
                 }
             }
 
@@ -2626,27 +2638,31 @@ async function fetchPayments() {
 
             async function deleteOrder(id) {
                 try {
-                    await fetch(`${API.orders}/${id}`, { method: 'DELETE', credentials: 'include' });
-                    await fetchOrders();
+                    await deleteFromApi(`${API.orders}/${id}`);
+                    allOrders = allOrders.filter(order => String(order.id) !== String(id));
+                    renderOrders();
                     updateStats();
                     showToast('Order deleted');
+                    return true;
                 } catch (e) {
-                    allOrders = allOrders.filter(o => o.id !== id);
-                    renderOrders();
-                    showToast('Order deleted (local)');
+                    console.error('Failed to delete order:', e);
+                    showToast(e.message || 'Unable to delete order', 'error');
+                    return false;
                 }
             }
 
 
             async function deletePayment(id) {
                 try {
-                    await fetch(`${API.payments}/${id}`, { method: 'DELETE', credentials: 'include' });
-                    await fetchPayments();
-                    showToast('Payment deleted');
-                } catch (e) {
-                    allPayments = allPayments.filter(p => p.id !== id);
+                    await deleteFromApi(`${API.payments}/${id}`);
+                    allPayments = allPayments.filter(payment => String(payment.id) !== String(id));
                     renderPayments();
-                    showToast('Payment deleted (local)');
+                    showToast('Payment deleted');
+                    return true;
+                } catch (e) {
+                    console.error('Failed to delete payment:', e);
+                    showToast(e.message || 'Unable to delete payment', 'error');
+                    return false;
                 }
             }
 
@@ -2667,13 +2683,16 @@ async function fetchPayments() {
 
             async function deleteUser(id) {
                 try {
-                    await fetch(`${API.users}/${id}`, { method: 'DELETE', credentials: 'include' });
-                    await fetchUsers();
-                    showToast('User deleted');
-                } catch (e) {
-                    allUsers = allUsers.filter(u => u.id !== id);
+                    await deleteFromApi(`${API.users}/${id}`);
+                    allUsers = allUsers.filter(user => String(user.id) !== String(id));
                     renderUsers();
-                    showToast('User deleted (local)');
+                    updateStats();
+                    showToast('User deleted');
+                    return true;
+                } catch (e) {
+                    console.error('Failed to delete user:', e);
+                    showToast(e.message || 'Unable to delete user', 'error');
+                    return false;
                 }
             }
 
@@ -3251,18 +3270,17 @@ async function fetchPayments() {
                 let imageUrl = imageDataUrl;
                 if (pImage.files && pImage.files[0]) {
                     const uploaded = await uploadImage(pImage.files[0]);
-                    if (uploaded) imageUrl = uploaded;
+                    if (!uploaded) return;
+                    imageUrl = uploaded;
                 }
 
                 const productData = { name, category, price, stock, discount, prep_time, rating, featured, description,
                     image: imageUrl || '', image_icon: 'fa-apple-alt', available, sort_order };
 
-                if (editingProductId) {
-                    await saveProduct(productData, editingProductId);
-                } else {
-                    await saveProduct(productData);
-                }
-                closeProductModal();
+                const saved = editingProductId
+                    ? await saveProduct(productData, editingProductId)
+                    : await saveProduct(productData);
+                if (saved) closeProductModal();
             });
 
             // ---- Image preview ----
@@ -3291,23 +3309,28 @@ async function fetchPayments() {
 
             // ---- Delete confirm ----
             deleteConfirm.addEventListener('click', async () => {
-                const id = parseInt(deleteItemId.value);
+                const id = deleteItemId.value.trim();
                 const type = deleteItemType.value;
                 if (!id) return;
-                if (type === 'product') await deleteProduct(id);
-                else if (type === 'order') await deleteOrder(id);
-                else if (type === 'payment') await deletePayment(id);
-                else if (type === 'user') await deleteUser(id);
+                deleteConfirm.disabled = true;
+                let deleted = false;
+                if (type === 'product') deleted = await deleteProduct(id);
+                else if (type === 'order') deleted = await deleteOrder(id);
+                else if (type === 'payment') deleted = await deletePayment(id);
+                else if (type === 'user') deleted = await deleteUser(id);
                 else if (type === 'delivery') {
-                    deliveries = deliveries.filter(d => d.id !== id);
+                    deliveries = deliveries.filter(d => String(d.id) !== id);
                     renderDeliveries();
                     showToast('Rider deleted');
+                    deleted = true;
                 } else if (type === 'debt') {
-                    debts = debts.filter(d => d.id !== id);
+                    debts = debts.filter(d => String(d.id) !== id);
                     renderDebts();
                     showToast('Debt deleted');
+                    deleted = true;
                 }
-                closeDeleteModal();
+                deleteConfirm.disabled = false;
+                if (deleted) closeDeleteModal();
             });
 
             deleteCancel.addEventListener('click', closeDeleteModal);
