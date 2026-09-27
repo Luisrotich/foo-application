@@ -89,10 +89,6 @@ def save_compressed_image(uploaded_file):
 
     return result['secure_url']
 
-# ============================
-# DATA STORES (in‑memory)
-# ============================
-
 users = {}          # id -> {id, name, email, password_hash, phone, address, created_at, favorites, addresses}
 products = {}       # id -> {id, name, category, price, stock, discount, prep_time, rating, featured, description, image, image_icon, available, sort_order}
 orders = {}         # id -> {id, user_id, customer, phone, items, total, status, created_at, note, delivery_address, payment_id}
@@ -113,6 +109,7 @@ payment_id_counter = 500
 delivery_id_counter = 300
 debt_id_counter = 400
 notification_id_counter = 1
+user_favorites_table_ready = False
 
 # ============================
 # HELPER FUNCTIONS
@@ -174,6 +171,30 @@ def save_notification(message, type='order'):
     notification_id_counter += 1
     notifications.insert(0, notif)
     return notif
+
+def ensure_user_favorites_table():
+    global user_favorites_table_ready
+    if user_favorites_table_ready:
+        return
+
+    db.session.execute(
+        text("""
+            CREATE TABLE IF NOT EXISTS user_favorites (
+                user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                meal_id uuid NOT NULL REFERENCES meals(id) ON DELETE CASCADE,
+                created_at timestamptz NOT NULL DEFAULT now(),
+                PRIMARY KEY (user_id, meal_id)
+            )
+        """)
+    )
+    db.session.execute(
+        text("""
+            CREATE INDEX IF NOT EXISTS idx_user_favorites_user_created
+            ON user_favorites(user_id, created_at DESC)
+        """)
+    )
+    db.session.commit()
+    user_favorites_table_ready = True
 
 def parse_json_items(items_str):
     try:
@@ -1103,8 +1124,6 @@ def checkout():
     delivery = str(
         data.get('delivery') or data.get('address') or ''
     ).strip()
-    note = str(data.get('note') or '').strip()
-
     if not items:
         return jsonify({'error': 'Cart is empty'}), 400
 

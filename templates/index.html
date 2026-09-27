@@ -3876,6 +3876,7 @@ document.addEventListener('click', event => {
                     .then(data => {
                         products = data;
                         renderProducts(products);
+                        renderFavorites();
                     })
                     .catch(() => {
                         showToast('Error loading products', 3000);
@@ -3987,7 +3988,7 @@ document.addEventListener('click', event => {
                 } else {
                     relatedProducts.innerHTML = '<span style="font-size:0.7rem;color:#94a3b8;">No related products</span>';
                 }
-                const isFav = userFavorites.includes(product.id);
+                const isFav = userFavorites.some(id => String(id) === String(product.id));
                 modalFavBtn.innerHTML = isFav ?
                     '<i class="fas fa-heart" style="color:#ef4444;"></i> Remove from Favorites' :
                     '<i class="fas fa-heart"></i> Add to Favorites';
@@ -4030,7 +4031,7 @@ document.addEventListener('click', event => {
                 if (!currentProductId) return;
                 const product = getProductById(currentProductId);
                 if (!product) return;
-                const isFav = userFavorites.includes(product.id);
+                const isFav = userFavorites.some(id => String(id) === String(product.id));
                 fetch('/api/user/favorites', {
                         method: isFav ? 'DELETE' : 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -4039,14 +4040,19 @@ document.addEventListener('click', event => {
                     })
                     .then(res => {
                         if (res.ok) {
-                            fetchUserData();
+                            userFavorites = isFav
+                                ? userFavorites.filter(id => String(id) !== String(product.id))
+                                : [...userFavorites, product.id];
+                            renderFavorites();
                             showToast(isFav ? 'Removed from favorites' : 'Added to favorites!', 1500);
                             modalFavBtn.innerHTML = isFav ?
                                 '<i class="fas fa-heart"></i> Add to Favorites' :
                                 '<i class="fas fa-heart" style="color:#ef4444;"></i> Remove from Favorites';
+                        } else {
+                            showToast('Could not update favorites', 2000);
                         }
                     })
-                    .catch(() => {});
+                    .catch(() => showToast('Could not update favorites', 2000));
             });
 
             // ==========================================================
